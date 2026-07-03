@@ -209,10 +209,39 @@ def trends(activities, today):
             b['secs'] += secs
             b['acts'] += 1
 
-    def rows(buckets, label, partial=None):
+    zero = {'km': 0.0, 'elev': 0.0, 'secs': 0.0, 'acts': 0}
+
+    def week_keys(buckets):
+        if not buckets:
+            return []
+        ks = sorted(buckets)
+        d, hi, out = ks[0], ks[-1], []
+        while d <= hi:
+            out.append(d)
+            d += datetime.timedelta(days=7)
+        return out
+
+    def month_keys(buckets):
+        if not buckets:
+            return []
+        ks = sorted(buckets)
+        (y, m), (hy, hm) = ks[0], ks[-1]
         out = []
-        for key in sorted(buckets):
-            b = buckets[key]
+        while (y, m) <= (hy, hm):
+            out.append((y, m))
+            y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+        return out
+
+    def year_keys(buckets):
+        if not buckets:
+            return []
+        ks = sorted(buckets)
+        return list(range(ks[0], ks[-1] + 1))
+
+    def rows(keys, buckets, label, partial=None):
+        out = []
+        for key in keys:
+            b = buckets.get(key, zero)
             out.append({
                 'label': label(key),
                 'km': round(b['km']),
@@ -225,9 +254,9 @@ def trends(activities, today):
         return out
 
     return {
-        'weekly': rows(weekly, lambda k: f'{MONTHS[k.month - 1]} {k.day}')[-52:],
-        'monthly': rows(monthly, lambda k: f"{MONTHS[k[1] - 1]} '{str(k[0])[2:]}"),
-        'yearly': rows(yearly, str, partial=lambda y: y == today.year),
+        'weekly': rows(week_keys(weekly), weekly, lambda k: f'{MONTHS[k.month - 1]} {k.day}')[-52:],
+        'monthly': rows(month_keys(monthly), monthly, lambda k: f"{MONTHS[k[1] - 1]} '{str(k[0])[2:]}"),
+        'yearly': rows(year_keys(yearly), yearly, str, partial=lambda y: y == today.year),
     }
 
 
