@@ -63,6 +63,7 @@ place on full page load and swapped into #cmp-body on a sport-filter click (htmx
         {% for c in row.cells %}
         <div class="cmp-cell{% if c.current %} is-current{% endif %}">
           {% if c.title %}
+          {% if c.photo %}<img class="cmp-aoty-photo" src="{{ c.photo }}" alt="{{ c.title }}" loading="lazy">{% endif %}
           <span class="aoty-name aoty-link" role="button" tabindex="0" data-activity="{{ c.id }}">{{ c.title }}</span>
           <span class="aoty-stat">{% for s in c.segments %}{% if not forloop.first %} · {% endif %}{{ s.v }}<small>{{ s.u }}</small>{% endfor %}</span>
           {% else %}

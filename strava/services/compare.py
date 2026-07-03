@@ -198,7 +198,7 @@ def _effort_rows(years, by_year, home, today):
                 continue
             any_present = True
             best = pick(acts)
-            cells.append({'current': current, 'id': best.pk,
+            cells.append({'current': current, 'id': best.pk, 'photo': best.photo_url,
                           'title': best.name, 'segments': segs(best)})
         return {'icon': icon, 'name': name, 'unit': unit, 'cells': cells} if any_present else None
 
