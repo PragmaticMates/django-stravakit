@@ -320,6 +320,7 @@
             if (a >= s && a <= en) found = i;
           });
         }
+        canvas.style.cursor = found >= 0 ? 'pointer' : 'default';
         if (found !== hoveredIdx) { hoveredIdx = found; draw(canvas, hoveredIdx); syncLegend(hoveredIdx); }
       });
       canvas.addEventListener('mouseleave', () => {
@@ -327,7 +328,24 @@
       });
     }
 
-    window.addEventListener('load', () => { loadData(); bindHover(); renderDonut(); });
+    // Reverse direction: hovering a legend item highlights the matching segment.
+    // Delegated on the container so it survives the legend's innerHTML rebuilds.
+    function bindLegendHover() {
+      const legend = document.getElementById('gear-donut-legend');
+      const canvas = document.getElementById('gear-donut');
+      if (!legend || !canvas) return;
+      const setFromEvent = (e) => {
+        const item = e.target.closest('.donut-legend-item');
+        const idx = item ? parseInt(item.dataset.idx, 10) : -1;
+        if (idx !== hoveredIdx) { hoveredIdx = idx; draw(canvas, hoveredIdx); syncLegend(hoveredIdx); }
+      };
+      legend.addEventListener('mouseover', setFromEvent);
+      legend.addEventListener('mouseleave', () => {
+        hoveredIdx = -1; draw(canvas, -1); syncLegend(-1);
+      });
+    }
+
+    window.addEventListener('load', () => { loadData(); bindHover(); bindLegendHover(); renderDonut(); });
     window.addEventListener('ds:tweaks', renderDonut);
     window.addEventListener('ds:datachanged', () => { hoveredIdx = -1; loadData(); renderDonut(); });
   })();
