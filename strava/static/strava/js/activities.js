@@ -17,7 +17,10 @@ var DSDist = window.DSDistSlider.build(document.getElementById('dist-slider'));
 // Per-sport distance ceilings ('all' / group key / sport_type → km), see ActivitiesView.
 var DSDistCeils = window.DSDistSlider.ceils('dist-ceils-data');
 
-// ——— Sport dropdown drives the filter form ———
+// ——— Sport / gear / year dropdowns drive the filter form ———
+// Each writes its value into the matching hidden input and submits the form; htmx swaps
+// the results. The dropdowns are the shared DSSport / DSPill modules — the same controls
+// the dashboard map filter bar uses.
 (function() {
   var btn = document.getElementById('acts-sport-btn');
   if (btn && window.DSSport) {
@@ -29,6 +32,17 @@ var DSDistCeils = window.DSDistSlider.ceils('dist-ceils-data');
       document.getElementById('acts-filters').requestSubmit();
     }});
   }
+  function pill(btnId, inputId, sections) {
+    var b = document.getElementById(btnId);
+    if (b && window.DSPill) {
+      window.DSPill.build(b, { sections: sections, onSelect: function(value) {
+        document.getElementById(inputId).value = value;
+        document.getElementById('acts-filters').requestSubmit();
+      }});
+    }
+  }
+  pill('acts-gear-btn', 'f-gear', [{ key: 'bike', label: 'Bikes' }, { key: 'shoe', label: 'Shoes' }]);
+  pill('acts-year-btn', 'f-year', null);
 })();
 
 function setView(view) {

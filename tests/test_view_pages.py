@@ -102,14 +102,15 @@ class TestActivitiesView:
         assert ctx["summary"]["count"] == 1
         assert ctx["summary"]["distance_km"] == 10
 
-    def test_month_list_and_gear_list(self):
+    def test_year_and_gear_options(self):
         g = make_gear("g1")
         make_activity(1, "Run", gear=g, start_date=dt(2025, 6, 1))
-        make_activity(2, "Run", start_date=dt(2025, 5, 1))
+        make_activity(2, "Run", start_date=dt(2024, 5, 1))
         ctx = list_context(ActivitiesView)
-        assert ("2025-06", "Jun 2025") in ctx["month_list"]
-        # gear_list only includes gear actually attached to an activity
-        assert list(ctx["gear_list"]) == [g]
+        # year_options: [[year, year], …] newest first, one entry per distinct year.
+        assert ctx["year_options"] == [["2025", "2025"], ["2024", "2024"]]
+        # gear_options: [[id, label, type], …], only gear actually attached to an activity.
+        assert ctx["gear_options"] == [[str(g.pk), str(g), g.gear_type]]
 
     def test_sort_by_distance(self):
         make_activity(1, distance=5000)

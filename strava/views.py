@@ -74,10 +74,17 @@ class DashboardView(AthleteScopedMixin, TemplateView):
         year = params.get('year') or 'all'
         context['q'], context['sport'], context['gear'], context['year'] = q, sport, gear, year
 
-        # Sport filter dropdown: every sport in the data (not just GPS-mapped ones) + groups.
+        # Sport / gear / year filter dropdowns: options come from every activity in the
+        # data (not just GPS-mapped ones) so a GPS-less sport/gear/year still appears — the
+        # map filters markers in JS but the stats sync recomputes over all of them.
         public_qs = Activity.objects.for_athlete(self.athlete).public()
         context['sport_options'] = sport_options(public_qs)
         context['sport_groups'] = group_data()
+        gear_qs = (
+            Gear.objects.for_athlete(self.athlete)
+            .filter(activity__is_private=False).distinct().order_by('brand_name', 'model_name')
+        )
+        context.update(helpers.gear_year_options(public_qs, gear_qs))
 
         # Distance slider bounds (shared with the activities filter bar); the map filters
         # markers client-side against dist_min/dist_max, mirrored here so every section
@@ -177,7 +184,7 @@ class ActivitiesView(AthleteScopedMixin, ListView):
             .search(params.get('q'))
             .for_sport_selection(params.get('sport'))
             .for_gear(params.get('gear'))
-            .for_month(params.get('month'))
+            .for_year(params.get('year'))
             .for_distance(params.get('dist_min'), params.get('dist_max'))
             .sorted_by(params.get('sort'), params.get('dir', 'desc'))
         )
@@ -190,24 +197,22 @@ class ActivitiesView(AthleteScopedMixin, ListView):
         context['q'] = params.get('q', '')
         context['sport'] = params.get('sport', 'all')
         context['gear'] = params.get('gear', 'all')
-        context['month'] = params.get('month', 'all')
+        context['year'] = params.get('year', 'all')
         context['sort'] = params.get('sort', '')
         context['dir'] = params.get('dir', 'desc')
         context['view'] = params.get('view', 'grid')
 
-        context['sport_options'] = sport_options(Activity.objects.for_athlete(self.athlete).public())
+        # Sport / gear / year filter pills — the same reusable controls (and option
+        # sources) as the dashboard map filter bar.
+        public_qs = Activity.objects.for_athlete(self.athlete).public()
+        context['sport_options'] = sport_options(public_qs)
         context['sport_groups'] = group_data()
-        context['gear_list'] = (
+        gear_qs = (
             Gear.objects.for_athlete(self.athlete)
             .filter(activity__is_private=False).distinct().order_by('brand_name', 'model_name')
         )
-        context['month_list'] = [
-            (d.strftime('%Y-%m'), d.strftime('%b %Y'))
-            for d in Activity.objects.for_athlete(self.athlete).public().dates('start_date', 'month', order='DESC')
-        ]
-        context.update(helpers.distance_slider_context(
-            Activity.objects.for_athlete(self.athlete).public(), context['sport'], params,
-        ))
+        context.update(helpers.gear_year_options(public_qs, gear_qs))
+        context.update(helpers.distance_slider_context(public_qs, context['sport'], params))
         context['summary'] = services.activities.summary(self.object_list, timezone.now().date())
         return context
 

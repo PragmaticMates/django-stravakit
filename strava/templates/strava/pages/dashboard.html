@@ -32,15 +32,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       <input type="text" placeholder="Search…" class="map-search-input">
     </div>
-    <button class="pill-btn" type="button" id="map-year-btn">
-      <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"></rect><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line><line x1="4" y1="10" x2="20" y2="10"></line></svg>
-      <span class="pill-label">All Years</span> <span class="caret">▾</span>
-    </button>
+    {% include "strava/widgets/filter_pill.html" with btn_id="map-year-btn" options_id="map-year-options" icon="year" all_label="All Years" current=year options=year_options trigger_class="pill-btn" %}
     {% include "strava/widgets/sport_filter.html" with btn_id="map-sport-btn" options_id="map-sport-options" groups_id="map-sport-groups" current=sport trigger_class="pill-btn sport-pill" %}
-    <button class="pill-btn" type="button" id="map-gear-btn">
-      <svg viewBox="0 0 24 24"><path d="M3 18h18"></path><path d="M5 18V9c0-1 .5-2 2-2h4l4 3h2c1 0 2 .5 2 2v6"></path><path d="M9 7V6"></path><path d="M5 14h14"></path></svg>
-      <span class="pill-label">All Gear</span> <span class="caret">▾</span>
-    </button>
+    {% include "strava/widgets/filter_pill.html" with btn_id="map-gear-btn" options_id="map-gear-options" icon="gear" all_label="All Gear" current=gear options=gear_options trigger_class="pill-btn" %}
     <div class="af-dist" id="map-dist-slider" data-ceil="{{ dist_ceil }}">
       <span class="af-dist-label">Distance</span>
       <div class="af-dist-track">
@@ -224,6 +218,7 @@ endpoint the map uses) into .act-modal-host.
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=" crossorigin=""></script>
 <script src="{% static 'strava/js/charts.js' %}"></script>
 <script src="{% static 'strava/js/sport-filter.js' %}"></script>
+<script src="{% static 'strava/js/pill-filter.js' %}"></script>
 <script src="{% static 'strava/js/dist-slider.js' %}"></script>
 <script src="{% static 'strava/js/dashboard-map.js' %}"></script>
 <script src="{% static 'strava/js/dashboard.js' %}"></script>

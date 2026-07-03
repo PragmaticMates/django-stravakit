@@ -153,6 +153,7 @@ body {
   min-width: 150px;
 }
 .af-sport-trigger:hover { border-color: var(--ink-3); color: var(--ink); }
+.af-sport-trigger .caret { margin-left: auto; color: var(--ink-3); font-size: 10px; }
 
 /* Activity map markers (Leaflet divIcon pins) */
 .map-pin {
@@ -284,6 +285,11 @@ body.map-expanded .nav { position: sticky; top: 0; z-index: 1001; }
 }
 .pill-btn .caret { color: var(--ink-3); font-size: 10px; }
 .pill-btn svg { width: 15px; height: 15px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
+
+/* Generic pill filter icon (widgets/filter_pill.html) — styled independently of the
+   trigger class so the year/gear pills render the same on the map and activities bars. */
+.pill-icon { display: inline-flex; flex: none; }
+.pill-icon svg { width: 15px; height: 15px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
 
 .float-card {
   position: absolute; z-index: 6;

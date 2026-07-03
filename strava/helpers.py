@@ -66,6 +66,20 @@ def distance_slider_context(public_qs, sport, params):
     }
 
 
+def gear_year_options(public_qs, gear_qs):
+    """Options for the gear + year filter pills, shared by the activities filter bar and
+    the dashboard map filter bar (rendered as json_script islands the pill JS reads).
+
+    ``gear_options`` is ``[[id, label, type], …]`` — the type ('bike'/'shoe') drives the
+    Bikes/Shoes sections; ``year_options`` is ``[[year, year], …]`` newest first. Only gear
+    and years actually present in the passed querysets appear."""
+    return {
+        'gear_options': [[str(g.pk), str(g), g.gear_type] for g in gear_qs],
+        'year_options': [[str(d.year), str(d.year)]
+                         for d in public_qs.dates('start_date', 'year', order='DESC')],
+    }
+
+
 def unaccent(s):
     """Lowercase and strip diacritics — the server-side twin of the map filter's JS
     ``unaccent()`` so a filtered search here matches what the map shows."""

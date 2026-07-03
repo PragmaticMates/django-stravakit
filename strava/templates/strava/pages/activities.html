@@ -41,23 +41,13 @@
     <input type="hidden" name="sport" id="f-sport" value="{{ sport }}">
     {% include "strava/widgets/sport_filter.html" with btn_id="acts-sport-btn" options_id="acts-sport-options" groups_id="acts-sport-groups" current=sport trigger_class="af-sport-trigger sport-pill" %}
 
-    <div class="af-sport-wrap">
-      <select class="af-sport-select" id="gear-select" name="gear">
-        <option value="all">All Gear</option>
-        {% for g in gear_list %}<option value="{{ g.pk }}"{% if gear == g.pk|stringformat:'s' %} selected{% endif %}>{{ g }}</option>{% endfor %}
-      </select>
-      <span class="af-sport-caret"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
-    </div>
+    <input type="hidden" name="gear" id="f-gear" value="{{ gear }}">
+    {% include "strava/widgets/filter_pill.html" with btn_id="acts-gear-btn" options_id="acts-gear-options" icon="gear" all_label="All Gear" current=gear options=gear_options trigger_class="af-sport-trigger" %}
 
     <div class="af-sep"></div>
 
-    <div class="af-sport-wrap">
-      <select class="af-sport-select" id="month-select" name="month">
-        <option value="all">All Months</option>
-        {% for value, label in month_list %}<option value="{{ value }}"{% if month == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
-      </select>
-      <span class="af-sport-caret"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
-    </div>
+    <input type="hidden" name="year" id="f-year" value="{{ year }}">
+    {% include "strava/widgets/filter_pill.html" with btn_id="acts-year-btn" options_id="acts-year-options" icon="year" all_label="All Years" current=year options=year_options trigger_class="af-sport-trigger" %}
 
     <div class="af-sep"></div>
 
@@ -104,6 +94,7 @@
 {% block extra_js %}
 <script src="{% static 'strava/js/charts.js' %}"></script>
 <script src="{% static 'strava/js/sport-filter.js' %}"></script>
+<script src="{% static 'strava/js/pill-filter.js' %}"></script>
 <script src="{% static 'strava/js/dist-slider.js' %}"></script>
 <script src="{% static 'strava/js/activities.js' %}"></script>
 {% endblock %}

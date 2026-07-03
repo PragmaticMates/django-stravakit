@@ -477,95 +477,6 @@
     });
   }
 
-  // Distinct {value, label[, group]} options present among the markers for a given pair
-  // of keys. Pass groupKey to also capture a section key (e.g. gear_type) per option.
-  function distinctOptions(valueKey, labelKey, groupKey) {
-    const seen = {}, out = [];
-    markers.forEach(function(m) {
-      const v = m[valueKey];
-      if (v === '' || v == null) return;
-      const key = String(v);
-      if (seen[key]) return;
-      seen[key] = true;
-      const opt = { value: key, label: String(m[labelKey]) };
-      if (groupKey) opt.group = (m[groupKey] == null ? '' : String(m[groupKey]));
-      out.push(opt);
-    });
-    return out;
-  }
-
-  // Turn a pill button into a dropdown of options; selecting one updates the filter.
-  // Reuses the .sports-dd styling. Hidden entirely when there's nothing to choose.
-  // Pass `sections` ([{ key, label }]) to group options under headings by their `group`
-  // field; options with no matching section fall under a plain tail.
-  function setupFilterPill(btn, allLabel, options, key, sections) {
-    if (!btn) return;
-    if (!options.length) { btn.style.display = 'none'; return; }
-    const label = btn.querySelector('.pill-label');
-    const dd = document.createElement('div');
-    dd.className = 'sports-dd';
-    dd.style.display = 'none';
-    function addHead(text) {
-      const h = document.createElement('div');
-      h.className = 'sports-dd-group';
-      h.textContent = text;
-      dd.appendChild(h);
-    }
-    function addOpt(opt) {
-      const el = document.createElement('div');
-      el.className = 'sports-dd-opt' + (opt.value === 'all' ? ' sports-dd-sel' : '');
-      el.innerHTML = '<span>' + opt.label + '</span>';
-      el.addEventListener('click', function(e) {
-        e.stopPropagation();
-        filterState[key] = opt.value;
-        dd.querySelectorAll('.sports-dd-opt').forEach(function(o) { o.classList.remove('sports-dd-sel'); });
-        el.classList.add('sports-dd-sel');
-        if (label) label.textContent = opt.value === 'all' ? allLabel : opt.label;
-        dd.style.display = 'none';
-        applyFilters();
-      });
-      dd.appendChild(el);
-    }
-    addOpt({ value: 'all', label: allLabel });
-    if (sections && sections.length) {
-      const known = {};
-      sections.forEach(function(sec) {
-        known[sec.key] = true;
-        const inSec = options.filter(function(o) { return o.group === sec.key; });
-        if (!inSec.length) return;
-        addHead(sec.label);
-        inSec.forEach(addOpt);
-      });
-      options.filter(function(o) { return !known[o.group]; }).forEach(addOpt);
-    } else {
-      options.forEach(addOpt);
-    }
-    document.body.appendChild(dd);
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const wasOpen = dd.style.display === 'block';
-      document.querySelectorAll('.sports-dd').forEach(function(d) { d.style.display = 'none'; });
-      if (!wasOpen) {
-        const r = btn.getBoundingClientRect();
-        // Show first so we can measure the rendered width, then clamp the left edge
-        // so the menu never spills past the viewport (buttons sit on the right side).
-        dd.style.display = 'block';
-        const margin = 8;
-        let left = r.left + window.scrollX;
-        const maxLeft = window.scrollX + document.documentElement.clientWidth - dd.offsetWidth - margin;
-        if (left > maxLeft) left = maxLeft;
-        if (left < window.scrollX + margin) left = window.scrollX + margin;
-        dd.style.top = (r.bottom + window.scrollY + 6) + 'px';
-        dd.style.left = left + 'px';
-      }
-    });
-  }
-
-  const gearOpts = distinctOptions('gear', 'gear_label', 'gear_type')
-    .sort(function(a, b) { return a.label.localeCompare(b.label); });
-  const yearOpts = distinctOptions('year', 'year')
-    .sort(function(a, b) { return Number(b.value) - Number(a.value); });
-
   // Distance range slider (shared DSDistSlider module). Filtering runs client-side on
   // release; the sport dropdown rescales the track to the selected sport's ceiling.
   const distCeils = window.DSDistSlider.ceils('map-dist-ceils');
@@ -574,8 +485,9 @@
   });
   if (distSlider) { filterState.dist_min = distSlider.min(); filterState.dist_max = distSlider.max(); }
 
-  // Sport uses the shared categorized icon dropdown (options come from the server so
-  // GPS-less sports appear too); gear/year keep the simple flat pills.
+  // Sport / gear / year all use shared dropdown modules (options come from the server so
+  // GPS-less activities' sports/gear/years appear too, matching the stats sync). Each
+  // onSelect updates filterState and re-runs the client-side marker filter.
   const sportBtn = document.getElementById('map-sport-btn');
   if (sportBtn && window.DSSport) {
     filterState.sport = sportBtn.getAttribute('data-sport-current') || 'all';
@@ -591,12 +503,17 @@
       applyFilters();
     } });
   }
-  setupFilterPill(document.getElementById('map-gear-btn'), 'All Gear', gearOpts, 'gear',
-    [{ key: 'bike', label: 'Bikes' }, { key: 'shoe', label: 'Shoes' }]);
-  setupFilterPill(document.getElementById('map-year-btn'), 'All Years', yearOpts, 'year');
-
-  // Close any open filter dropdown on an outside click.
-  document.addEventListener('click', function() {
-    document.querySelectorAll('.sports-dd').forEach(function(d) { d.style.display = 'none'; });
-  });
+  const gearBtn = document.getElementById('map-gear-btn');
+  if (gearBtn && window.DSPill) {
+    filterState.gear = gearBtn.getAttribute('data-pill-current') || 'all';
+    DSPill.build(gearBtn, {
+      sections: [{ key: 'bike', label: 'Bikes' }, { key: 'shoe', label: 'Shoes' }],
+      onSelect: function(value) { filterState.gear = value; applyFilters(); }
+    });
+  }
+  const yearBtn = document.getElementById('map-year-btn');
+  if (yearBtn && window.DSPill) {
+    filterState.year = yearBtn.getAttribute('data-pill-current') || 'all';
+    DSPill.build(yearBtn, { onSelect: function(value) { filterState.year = value; applyFilters(); } });
+  }
 })();

@@ -1,0 +1,19 @@
+{% comment %}
+Generic pill-button filter backed by a json_script options island, built into a dropdown
+by pill-filter.js (window.DSPill). Shared by the dashboard map filter bar and the
+activities filter bar. Include with:
+
+  {% include "strava/widgets/filter_pill.html" with btn_id="x-year-btn" options_id="x-year-options" icon="year" all_label="All Years" current=year options=year_options trigger_class="pill-btn" %}
+
+Params: btn_id, options_id (unique DOM ids); icon ("year" or "gear"); all_label (reset row
++ default button text); current (selected value); options (the list island the JS reads);
+trigger_class (defaults to the map pill style). The page's JS wires selection via
+DSPill.build(document.getElementById(btn_id), { sections, onSelect }).
+{% endcomment %}
+<button type="button" class="{{ trigger_class|default:'pill-btn' }}" id="{{ btn_id }}"
+        data-pill-options="{{ options_id }}" data-pill-current="{{ current|default:'all' }}"
+        data-pill-all="{{ all_label }}">
+  <span class="pill-icon">{% if icon == 'gear' %}<svg viewBox="0 0 24 24"><path d="M3 18h18"></path><path d="M5 18V9c0-1 .5-2 2-2h4l4 3h2c1 0 2 .5 2 2v6"></path><path d="M9 7V6"></path><path d="M5 14h14"></path></svg>{% else %}<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"></rect><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line><line x1="4" y1="10" x2="20" y2="10"></line></svg>{% endif %}</span>
+  <span class="pill-label">{{ all_label }}</span> <span class="caret">▾</span>
+</button>
+{{ options|json_script:options_id }}
