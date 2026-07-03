@@ -1,10 +1,7 @@
 {% load strava_icons %}
-<div class="gallery-item" data-screen-label="Gallery item" onclick="openLightbox(this)"
-     data-title="{{ activity.name }}"
-     data-date="{{ activity.start_date|date:'M j, Y' }}"
-     data-sport="{{ activity.get_sport_type_display }}"
-     data-dist="{{ activity.distance_km }} km"
-     data-photo="{{ activity.photo_url }}">
+<div class="gallery-item" data-screen-label="Gallery item"
+     data-activity="{{ activity.id }}" role="button" tabindex="0"
+     aria-label="Open {{ activity.name }}">
   <div class="gallery-img">
     <div class="gallery-img-inner">
       <img src="{{ activity.photo_url }}" alt="{{ activity.name }}" loading="lazy">
