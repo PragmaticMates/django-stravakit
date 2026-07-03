@@ -779,8 +779,9 @@ img.act-photo, img.aoty-photo { object-fit: cover; }
   .sports-dd { max-width: calc(100vw - 24px); }
 }
 @media (max-width: 560px) {
-  .statband { grid-template-columns: 1fr; }
-  .statband .cell { padding: 12px 14px; gap: 12px; }
+  /* Keep two cells per row (like .acts-summary-item) instead of collapsing to one. */
+  .statband { padding: 6px 0; }
+  .statband .cell { padding: 12px 10px; gap: 12px; }
   .statband .ic { width: 40px; height: 40px; }
   .statband .ic svg { width: 30px; height: 30px; }
 
