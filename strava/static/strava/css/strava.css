@@ -2502,4 +2502,30 @@ img.act-photo, img.aoty-photo { object-fit: cover; }
 .aoty-stat small { font-size: 11px; font-weight: 600; color: var(--ink-3); margin-left: 1px; }
 
 .cmp-empty { padding: 48px; text-align: center; color: var(--ink-3); font-size: 14px; }
+
+/* On phones the 244px metric column crowds out the year columns. Stand the metric
+   labels on end so the pinned first column becomes a thin rail, freeing width for
+   the years. The verbose unit subtitle is dropped here to keep the rail narrow. */
+@media (max-width: 560px) {
+  .cmp-corner, .cmp-metric { width: 48px; }
+  .cmp-corner {
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    align-items: center; justify-content: center; padding: 12px 0; text-align: center;
+  }
+  .cmp-metric { flex-direction: column; gap: 8px; padding: 14px 4px; }
+  .cmp-metric .mic { width: 26px; height: 26px; }
+  .cmp-metric .mic svg { width: 15px; height: 15px; }
+  .cmp-metric .mname {
+    display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg);
+    font-size: 13px; line-height: 1.1; white-space: nowrap;
+  }
+  .cmp-metric .munit, .cmp-metric br { display: none; }
+
+  /* Trim the year columns and their type so ~2 fit beside the rail. */
+  .cmp-yhead, .cmp-cell { width: 132px; }
+  .cmp-yhead { padding: 12px 8px; }
+  .cmp-yhead .yr { font-size: 24px; }
+  .cmp-cell { padding: 12px 12px; }
+  .cmp-cell .cval { font-size: 21px; }
+}
 .gs-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; }
