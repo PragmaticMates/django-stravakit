@@ -227,9 +227,13 @@
       ctx.scale(dpr, dpr);
       const cx = size/2, cy = size/2, r = 86, inner = 55;
       segments.length = 0;
+      // Reserve one gap per segment out of the full circle so sweeps + gaps sum to
+      // exactly 2π; otherwise the last segment wraps past the top under the first.
+      const gap = 0.015;
+      const avail = Math.PI * 2 - data.length * gap;
       let angle = -Math.PI / 2;
       data.forEach((d, i) => {
-        const sweep = (d.acts / total) * Math.PI * 2;
+        const sweep = (d.acts / total) * avail;
         const isHov = i === hovered;
         const rOuter = isHov ? r + 6 : r;
         ctx.beginPath();
@@ -240,7 +244,7 @@
         ctx.fillStyle = isHov ? d.hoverColor : d.color;
         ctx.fill();
         segments.push({ startAngle: angle, endAngle: angle + sweep });
-        angle += sweep + 0.015;
+        angle += sweep + gap;
       });
       // Center text
       const numFont = getComputedStyle(document.documentElement).getPropertyValue('--font-numbers').trim().replace(/"/g,'').split(',')[0].trim() || 'Barlow Condensed';
