@@ -15,19 +15,43 @@ window.DSCharts = (function () {
     svg.setAttribute("viewBox", `0 0 ${vbW} ${vbH}`);
     svg.setAttribute("preserveAspectRatio", par);
     const dAttr = "M" + P.map(p => p.join(",")).join(" L");
-    const halo = el("path", { d: dAttr, fill: "none", "stroke-width": 3.6, "stroke-linecap": "round", "stroke-linejoin": "round" });
+    const halo = el("path", { d: dAttr, fill: "none", "stroke-width": 2.8, "stroke-linecap": "round", "stroke-linejoin": "round" });
     halo.style.stroke = "var(--surface)";
-    const line = el("path", { d: dAttr, fill: "none", "stroke-width": 1.7, "stroke-linecap": "round", "stroke-linejoin": "round" });
+    const line = el("path", { d: dAttr, fill: "none", "stroke-width": 1.2, "stroke-linecap": "round", "stroke-linejoin": "round" });
     line.style.stroke = "var(--accent)";
     svg.appendChild(halo); svg.appendChild(line);
-    const start = el("circle", { cx: P[0][0], cy: P[0][1], r: 2.4 });
-    start.style.fill = "var(--ink)";
-    const last = P[P.length - 1];
-    const endO = el("circle", { cx: last[0], cy: last[1], r: 2.8 });
-    endO.style.fill = "var(--accent)";
-    const endI = el("circle", { cx: last[0], cy: last[1], r: 1.1 });
-    endI.style.fill = "var(--surface)";
-    svg.appendChild(start); svg.appendChild(endO); svg.appendChild(endI);
+    // Strava-style markers: a green dot at the start, a checkered flag at the finish.
+    const start = el("circle", { cx: P[0][0], cy: P[0][1], r: 2 });
+    start.style.fill = "#2ecc40";
+    start.style.stroke = "var(--surface)";
+    start.style.strokeWidth = 0.8;
+    svg.appendChild(start);
+    svg.appendChild(checkerFlag(P[P.length - 1]));
+  }
+
+  /* ---- Checkered finish flag (SVG group), planted at the last route point ---- */
+  function checkerFlag([x, y]) {
+    const cell = 0.85, cols = 3, rows = 2;
+    const w = cols * cell, h = rows * cell;
+    const fx = x, fy = y - 4.6;  // flag hangs from the top of a short pole
+    const g = el("g", {});
+    const pole = el("line", { x1: fx, y1: y + 0.3, x2: fx, y2: fy, "stroke-width": 0.6, "stroke-linecap": "round" });
+    pole.style.stroke = "var(--ink)";
+    g.appendChild(pole);
+    const bg = el("rect", { x: fx, y: fy, width: w, height: h, "stroke-width": 0.35 });
+    bg.style.fill = "var(--surface)";
+    bg.style.stroke = "var(--ink)";
+    g.appendChild(bg);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if ((r + c) % 2 === 0) {
+          const sq = el("rect", { x: fx + c * cell, y: fy + r * cell, width: cell, height: cell });
+          sq.style.fill = "var(--ink)";
+          g.appendChild(sq);
+        }
+      }
+    }
+    return g;
   }
 
   /* ---- Hero route trace (abstract, auto-fit) ---- */
