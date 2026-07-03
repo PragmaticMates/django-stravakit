@@ -229,10 +229,12 @@
     // Re-read on a filter change (ds:datachanged) so the donut tracks the active filter.
     let data = [];
     let total = 0;
+    let metric = 'acts'; // 'acts' | 'dist'
+    function computeTotal() { total = data.reduce((s, d) => s + d[metric], 0); }
     function loadData() {
       const dataEl = document.getElementById('dashboard-gear-usage');
       data = dataEl ? JSON.parse(dataEl.textContent) : [];
-      total = data.reduce((s, d) => s + d.acts, 0);
+      computeTotal();
     }
 
     let hoveredIdx = -1;
@@ -253,7 +255,7 @@
       const avail = Math.PI * 2 - data.length * gap;
       let angle = -Math.PI / 2;
       data.forEach((d, i) => {
-        const sweep = (d.acts / total) * avail;
+        const sweep = total ? (d[metric] / total) * avail : 0;
         const isHov = i === hovered;
         const rOuter = isHov ? r + 6 : r;
         ctx.beginPath();
@@ -268,12 +270,17 @@
       });
       // Center text
       const numFont = getComputedStyle(document.documentElement).getPropertyValue('--font-numbers').trim().replace(/"/g,'').split(',')[0].trim() || 'Barlow Condensed';
+      const label = metric === 'dist' ? 'km' : 'activities';
+      // While a segment is hovered, show that gear's usage; otherwise the grand total.
+      const centerVal = (hovered >= 0 && data[hovered]) ? data[hovered][metric] : total;
+      const valStr = centerVal.toLocaleString('en-US');
+      const numSize = valStr.length > 6 ? 30 : valStr.length > 4 ? 36 : 44;
       ctx.fillStyle = '#1F1B18';
-      ctx.font = `800 44px "${numFont}", "Barlow Condensed", sans-serif`;
+      ctx.font = `800 ${numSize}px "${numFont}", "Barlow Condensed", sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(total, cx, cy - 10);
+      ctx.fillText(valStr, cx, cy - 10);
       ctx.fillStyle = '#888'; ctx.font = '500 14px Barlow, sans-serif';
-      ctx.fillText('activities', cx, cy + 14);
+      ctx.fillText(label, cx, cy + 14);
     }
 
     function renderDonut() {
@@ -345,7 +352,21 @@
       });
     }
 
-    window.addEventListener('load', () => { loadData(); bindHover(); bindLegendHover(); renderDonut(); });
+    // Switch the donut between activity-count and distance weighting.
+    function bindMetricToggle() {
+      const seg = document.getElementById('seg-gear-metric');
+      if (!seg) return;
+      seg.addEventListener('click', (e) => {
+        const b = e.target.closest('button');
+        if (!b || b.dataset.gmetric === metric) return;
+        metric = b.dataset.gmetric;
+        seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+        computeTotal();
+        renderDonut();
+      });
+    }
+
+    window.addEventListener('load', () => { loadData(); bindHover(); bindLegendHover(); bindMetricToggle(); renderDonut(); });
     window.addEventListener('ds:tweaks', renderDonut);
     window.addEventListener('ds:datachanged', () => { hoveredIdx = -1; loadData(); renderDonut(); });
   })();

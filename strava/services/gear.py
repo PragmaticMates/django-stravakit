@@ -45,6 +45,7 @@ def dashboard_sections(activities, no_filter):
         {
             'name': str(g),
             'acts': g.activity_count,
+            'dist': g.distance_km,
             'color': DONUT_PALETTE[i % len(DONUT_PALETTE)][0],
             'hoverColor': DONUT_PALETTE[i % len(DONUT_PALETTE)][1],
         }

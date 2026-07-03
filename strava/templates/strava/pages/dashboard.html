@@ -184,7 +184,10 @@ endpoint the map uses) into .act-modal-host.
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5a8.5 8.5 0 0 1 6 14.5"></path><path d="M12 3.5a8.5 8.5 0 0 0-6 14.5"></path></svg>
         <h2 class="card-title">Gear Usage</h2>
         <span class="spacer"></span>
-        <span class="card-sub">by activities</span>
+        <div class="seg" id="seg-gear-metric" style="margin-left: auto;">
+          <button data-gmetric="acts" aria-pressed="true">Activities</button>
+          <button data-gmetric="dist" aria-pressed="false">Distance</button>
+        </div>
       </div>
       <div class="gear-donut-wrap">
         <canvas id="gear-donut" class="gear-donut-canvas"></canvas>
