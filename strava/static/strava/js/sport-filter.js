@@ -101,9 +101,16 @@ window.DSSport = (function() {
       document.querySelectorAll('.sports-dd').forEach(function(d) { d.style.display = 'none'; });
       if (!wasOpen) {
         var r = trigger.getBoundingClientRect();
-        dd.style.top = (r.bottom + window.scrollY + 6) + 'px';
-        dd.style.left = (r.left + window.scrollX) + 'px';
+        // Show first so we can measure the rendered width, then clamp the left edge
+        // so the menu never spills past the viewport (buttons sit on the right side).
         dd.style.display = 'block';
+        var margin = 8;
+        var left = r.left + window.scrollX;
+        var maxLeft = window.scrollX + document.documentElement.clientWidth - dd.offsetWidth - margin;
+        if (left > maxLeft) left = maxLeft;
+        if (left < window.scrollX + margin) left = window.scrollX + margin;
+        dd.style.top = (r.bottom + window.scrollY + 6) + 'px';
+        dd.style.left = left + 'px';
       }
     });
 

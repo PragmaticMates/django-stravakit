@@ -37,7 +37,10 @@
       <span class="pill-label">All Years</span> <span class="caret">▾</span>
     </button>
     {% include "strava/widgets/sport_filter.html" with btn_id="map-sport-btn" options_id="map-sport-options" groups_id="map-sport-groups" current=sport trigger_class="pill-btn sport-pill" %}
-    <button class="pill-btn" type="button" id="map-gear-btn"><span class="pill-label">All Gear</span> <span class="caret">▾</span></button>
+    <button class="pill-btn" type="button" id="map-gear-btn">
+      <svg viewBox="0 0 24 24"><path d="M3 18h18"></path><path d="M5 18V9c0-1 .5-2 2-2h4l4 3h2c1 0 2 .5 2 2v6"></path><path d="M9 7V6"></path><path d="M5 14h14"></path></svg>
+      <span class="pill-label">All Gear</span> <span class="caret">▾</span>
+    </button>
     <div class="af-dist" id="map-dist-slider" data-ceil="{{ dist_ceil }}">
       <span class="af-dist-label">Distance</span>
       <div class="af-dist-track">

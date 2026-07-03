@@ -319,6 +319,7 @@ def map_data(activities):
                 'sport_label': a.get_sport_type_display(),
                 'gear': str(a.gear_id) if a.gear_id else '',
                 'gear_label': str(a.gear) if a.gear_id else '',
+                'gear_type': a.gear.gear_type if a.gear_id else '',  # 'bike'/'shoe' → dropdown sections
                 'year': timezone.localtime(a.start_date).year,
             })
             map_activities.append(a)
