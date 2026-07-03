@@ -51,6 +51,8 @@ function setView(view) {
   document.getElementById('f-view').value = view;
   document.getElementById('acts-filters').requestSubmit();
 }
+// Columns whose most useful first-click order is "largest first".
+var SORT_DESC_FIRST = ['dist', 'time', 'elev', 'cal'];
 function setSort(key) {
   var sortInput = document.getElementById('f-sort');
   var dirInput = document.getElementById('f-dir');
@@ -58,7 +60,7 @@ function setSort(key) {
     dirInput.value = dirInput.value === 'asc' ? 'desc' : 'asc';
   } else {
     sortInput.value = key;
-    dirInput.value = 'asc';
+    dirInput.value = SORT_DESC_FIRST.indexOf(key) !== -1 ? 'desc' : 'asc';
   }
   document.getElementById('acts-filters').requestSubmit();
 }
