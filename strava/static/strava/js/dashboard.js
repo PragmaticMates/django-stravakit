@@ -257,11 +257,21 @@
       const legend = document.getElementById('gear-donut-legend');
       if (!canvas || !legend) return;
       draw(canvas, hoveredIdx);
-      legend.innerHTML = data.map(d => `
-        <div class="donut-legend-item">
+      legend.innerHTML = data.map((d, i) => `
+        <div class="donut-legend-item" data-idx="${i}">
           <span class="donut-legend-dot" style="background:${d.color}"></span>
           <span class="donut-legend-name">${d.name}</span>
         </div>`).join('');
+      syncLegend(hoveredIdx);
+    }
+
+    // Reflect the hovered segment in the legend: dim the rest, highlight the match.
+    function syncLegend(idx) {
+      const legend = document.getElementById('gear-donut-legend');
+      if (!legend) return;
+      const items = legend.querySelectorAll('.donut-legend-item');
+      legend.classList.toggle('has-hover', idx >= 0);
+      items.forEach((el, i) => el.classList.toggle('is-active', i === idx));
     }
 
     // Bind hover behaviour once; it reads the current segments/data each move.
@@ -286,10 +296,10 @@
             if (a >= s && a <= en) found = i;
           });
         }
-        if (found !== hoveredIdx) { hoveredIdx = found; draw(canvas, hoveredIdx); }
+        if (found !== hoveredIdx) { hoveredIdx = found; draw(canvas, hoveredIdx); syncLegend(hoveredIdx); }
       });
       canvas.addEventListener('mouseleave', () => {
-        hoveredIdx = -1; draw(canvas, -1);
+        hoveredIdx = -1; draw(canvas, -1); syncLegend(-1);
       });
     }
 
