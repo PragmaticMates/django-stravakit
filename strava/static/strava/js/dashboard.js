@@ -63,15 +63,35 @@
     showRecords(recSport);
   });
 
-  /* ---- Activity calendar dots (5 weeks, sizes 0–2) ---- */
-  // Re-read on a filter change (ds:datachanged) so the dots track the active filter.
+  /* ---- Activity calendar dots (5-week window, sizes 0–2, with paging) ---- */
+  // The server embeds every week from the first activity to now; we show a sliding
+  // 5-week window and page through the rest with the ‹ › arrows. Re-read on a filter
+  // change (ds:datachanged) so the dots track the active filter.
+  const CAL_WIN = 5;
+  let calWeeks = [], calStart = 0;
   function renderCalendar() {
-    const weeks = readJSON("dashboard-calendar") || [];
-    $("#dotcal-rows").innerHTML = weeks.map(w => `
+    const total = calWeeks.length;
+    calStart = Math.max(0, Math.min(calStart, total - CAL_WIN));
+    const view = calWeeks.slice(calStart, calStart + CAL_WIN);
+    $("#dotcal-rows").innerHTML = view.map(w => `
       <span class="wk">${w.label}</span>
       ${w.dots.map(s => `<span class="dot" data-s="${s}"></span>`).join("")}`).join("");
+    const range = $("#cal-range");
+    if (range) range.textContent = view.length
+      ? `${view[0].label.split(" – ")[0]} – ${view[view.length - 1].label.split(" – ").pop()}`
+      : "";
+    const prev = $("#cal-prev"), next = $("#cal-next");
+    if (prev) prev.disabled = calStart <= 0;
+    if (next) next.disabled = calStart + CAL_WIN >= total;
   }
-  renderCalendar();
+  function loadCalendar() {
+    calWeeks = readJSON("dashboard-calendar") || [];
+    calStart = calWeeks.length;  // clamp lands on the most recent window
+    renderCalendar();
+  }
+  $("#cal-prev").addEventListener("click", () => { calStart -= CAL_WIN; renderCalendar(); });
+  $("#cal-next").addEventListener("click", () => { calStart += CAL_WIN; renderCalendar(); });
+  loadCalendar();
 
   /* ---- Charts ---- */
   const tip = $("#tip-trend");
@@ -103,7 +123,7 @@
   // A filter change swaps in fresh trends/calendar JSON — reload and redraw both.
   window.addEventListener("ds:datachanged", () => {
     loadTrends();
-    renderCalendar();
+    loadCalendar();
     requestAnimationFrame(draw);
   });
 })();

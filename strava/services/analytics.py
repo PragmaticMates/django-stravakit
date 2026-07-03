@@ -261,18 +261,26 @@ def trends(activities, today):
 
 
 def activity_calendar(activities, today):
-    """The last five weeks as ``[{'label', 'dots': [0|1|2, ...7]}, ...]`` — a dot per day
-    at intensity 0/1/2 (no activity / one / two-or-more), for the dashboard heat strip."""
+    """Every week from the earliest activity through the current week as
+    ``[{'label', 'dots': [0|1|2, ...7]}, ...]`` — a dot per day at intensity 0/1/2
+    (no activity / one / two-or-more), for the dashboard heat strip. The dashboard
+    renders a five-week window and pages back/forward through the full range."""
 
     day_counts = {}
     for a in activities:
         d = local_date(a)
         day_counts[d] = day_counts.get(d, 0) + 1
 
+    this_week = today - datetime.timedelta(days=today.weekday())
+    if day_counts:
+        first = min(day_counts)
+        ws = first - datetime.timedelta(days=first.weekday())
+    else:
+        # No activities: still show the trailing five weeks so the strip isn't blank.
+        ws = this_week - datetime.timedelta(weeks=4)
+
     weeks = []
-    week_start = today - datetime.timedelta(days=today.weekday())
-    for w in range(4, -1, -1):
-        ws = week_start - datetime.timedelta(weeks=w)
+    while ws <= this_week:
         we = ws + datetime.timedelta(days=6)
         dots = []
         for i in range(7):
@@ -280,6 +288,7 @@ def activity_calendar(activities, today):
             dots.append(2 if c >= 2 else 1 if c == 1 else 0)
         end = f'{we.day}' if we.month == ws.month else f'{MONTHS[we.month - 1]} {we.day}'
         weeks.append({'label': f'{MONTHS[ws.month - 1]} {ws.day} – {end}', 'dots': dots})
+        ws += datetime.timedelta(weeks=1)
     return weeks
 
 
