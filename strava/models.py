@@ -259,6 +259,9 @@ class Athlete(models.Model):
   refresh_token = models.CharField(_("refresh token"), max_length=100, blank=True, default="")
   token_expires_at = models.DateTimeField(_("token expires at"), null=True, blank=True)
   scope = models.CharField(_("scope"), max_length=200, blank=True, default="")
+  # When import_strava last refreshed this athlete's data — shown as the dashboard's
+  # "Last updated". Null until the first successful import.
+  synced_at = models.DateTimeField(_("last synced at"), null=True, blank=True)
   # The athlete rendered at the site root. Exactly one row is default (enforced below);
   # the frontend switcher overrides it per request.
   is_default = models.BooleanField(_("default"), default=False)

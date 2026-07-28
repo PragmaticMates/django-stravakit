@@ -127,7 +127,8 @@ class DashboardView(AthleteScopedMixin, TemplateView):
 
         # ---- "By the Numbers" — fun stats + summary, over the filtered activities ----
         context['fun_stats'], context['summary'] = services.analytics.by_the_numbers(activities)
-        context['last_updated'] = timezone.localtime()
+        # The real time import_strava last refreshed this athlete (not "now").
+        context['last_updated'] = self.athlete.synced_at if self.athlete else None
         return context
 
 
