@@ -1,0 +1,53 @@
+{% load humanize stravakit_icons %}
+<div class="gear-card {{ gear.wear_class }}{% if gear.is_retired %} is-retired{% endif %}"
+     data-screen-label="Gear card"
+     onclick="openSheet(this)"
+     data-name="{{ gear }}"
+     data-brand="{{ gear.brand_name }} · {{ gear.description }}"
+     data-km="{{ gear.distance_km|intcomma }}"
+     data-rides="{{ gear.activity_count }}"
+     data-rides-label="{% if gear.gear_type == 'bike' %}rides{% else %}runs{% endif %}"
+     data-wear="{{ gear.wear_pct }}"
+     data-last-used="{{ gear.last_activity|date:'M j, Y'|default:'—' }}"
+     data-type="{{ gear.description|default:gear.gear_type }}"
+     data-icon="{{ gear.gear_type }}">
+  <div class="gear-card-img">
+    <div class="gear-card-img-icon">
+      {% if gear.gear_type == 'bike' %}{{ 'ride'|group_glyph }}{% else %}{{ 'run'|group_glyph }}{% endif %}
+    </div>
+    {% if gear.badge_label %}<span class="gear-status-badge {{ gear.badge_class }}">{{ gear.badge_label }}</span>{% endif %}
+    <div class="gear-wear-bar"><div class="gear-wear-bar-fill" style="width:{{ gear.wear_pct }}%"></div></div>
+  </div>
+  <div class="gear-card-body">
+    <p class="gear-card-name">{{ gear }}</p>
+    <p class="gear-card-brand">{{ gear.brand_name }} · {{ gear.description }}</p>
+    <div class="gear-stats">
+      <div class="gear-stat">
+        <span class="gear-stat-val">{{ gear.distance_km|intcomma }}</span>
+        <span class="gear-stat-lbl">km</span>
+      </div>
+      <div class="gear-stat">
+        <span class="gear-stat-val">{{ gear.activity_count }}</span>
+        <span class="gear-stat-lbl">{% if gear.gear_type == 'bike' %}rides{% else %}runs{% endif %}</span>
+      </div>
+      <div class="gear-stat">
+        <span class="gear-stat-val">{{ gear.wear_pct }}%</span>
+        <span class="gear-stat-lbl">wear</span>
+      </div>
+    </div>
+    <div class="gear-card-footer">
+      <span class="gear-last-used">
+        <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"></rect><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line><line x1="4" y1="10" x2="20" y2="10"></line></svg>
+        {{ gear.last_activity|date:"M j, Y"|default:"Never" }}
+      </span>
+      <div class="gear-card-actions" onclick="event.stopPropagation()">
+        <button class="gc-btn" title="Edit">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        </button>
+        <button class="gc-btn" title="More">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle><circle cx="12" cy="19" r="1.2" fill="currentColor" stroke="none"></circle></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

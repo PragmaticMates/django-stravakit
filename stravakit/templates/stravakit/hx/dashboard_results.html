@@ -1,0 +1,14 @@
+{% comment %}
+htmx response for a dashboard filter change. Every block is an out-of-band swap
+(hx-swap-oob), so htmx places each into its matching id wherever it sits on the
+page — the updated sections aren't contiguous in the layout. The main hx-target
+(#dash-sink) just absorbs the empty leftover.
+{% endcomment %}
+{% include "stravakit/hx/dashboard_statband.html" %}
+{% include "stravakit/hx/dashboard_run_performance.html" %}
+{% include "stravakit/hx/dashboard_aoty.html" %}
+{% include "stravakit/hx/dashboard_map_note.html" %}
+{% include "stravakit/hx/dashboard_latest.html" %}
+{% include "stravakit/hx/dashboard_gear_body.html" %}
+{% include "stravakit/hx/dashboard_numbers.html" %}
+{% include "stravakit/hx/dashboard_data.html" %}

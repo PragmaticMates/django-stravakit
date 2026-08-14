@@ -5,9 +5,9 @@ from unittest.mock import patch
 import pytest
 from django.utils import timezone as dj_timezone
 
-from strava.consts import BIKE_LIFESPAN_KM, SHOE_LIFESPAN_KM
-from strava.models import Activity, Gear
-from strava.services import sync
+from stravakit.consts import BIKE_LIFESPAN_KM, SHOE_LIFESPAN_KM
+from stravakit.models import Activity, Gear
+from stravakit.services import sync
 
 
 def activity(**overrides):
@@ -166,7 +166,7 @@ class TestActivityApiHelpers:
         "distance": 8000, "start_date": "2025-06-15T07:00:00+00:00",
     }
 
-    @patch("strava.services.sync.StravaApi")
+    @patch("stravakit.services.sync.StravaApi")
     def test_fetch_from_api_stores_and_updates(self, mock_api_cls):
         mock_api_cls.return_value.get_activity.return_value = self.ACT_JSON
         a = Activity.objects.create(
@@ -180,7 +180,7 @@ class TestActivityApiHelpers:
         assert a.sport_type == "Run"
         assert a.json == self.ACT_JSON
 
-    @patch("strava.services.sync.StravaApi")
+    @patch("stravakit.services.sync.StravaApi")
     def test_send_to_api_pushes_then_refetches(self, mock_api_cls):
         mock_api_cls.return_value.get_activity.return_value = self.ACT_JSON
         a = Activity.objects.create(
@@ -249,11 +249,11 @@ class TestGear:
 
     def test_get_or_create_returns_existing(self):
         g = self._gear()
-        with patch("strava.services.sync.StravaApi") as mock_api:
+        with patch("stravakit.services.sync.StravaApi") as mock_api:
             assert sync.gear_ensure(gear_id="g1").pk == g.pk
             mock_api.assert_not_called()   # no API hit when already present
 
-    @patch("strava.services.sync.StravaApi")
+    @patch("stravakit.services.sync.StravaApi")
     def test_get_or_create_fetches_when_missing(self, mock_api_cls):
         mock_api_cls.return_value.get_gear.return_value = {**GEAR_JSON, "id": "g2"}
         gear = sync.gear_ensure(gear_id="g2")
@@ -261,7 +261,7 @@ class TestGear:
         assert gear.pk == "g2"
         assert gear.brand_name == "Nike"
 
-    @patch("strava.services.sync.StravaApi")
+    @patch("stravakit.services.sync.StravaApi")
     def test_fetch_from_api_updates_fields(self, mock_api_cls):
         g = self._gear(brand_name="Old")
         mock_api_cls.return_value.get_gear.return_value = {**GEAR_JSON, "brand_name": "New"}

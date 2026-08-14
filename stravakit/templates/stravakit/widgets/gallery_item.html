@@ -1,0 +1,49 @@
+{% load stravakit_icons %}
+<div class="gallery-item" data-screen-label="Gallery item"
+     data-activity="{{ activity.id }}" role="button" tabindex="0"
+     aria-label="Open {{ activity.name }}">
+  <div class="gallery-img">
+    <div class="gallery-img-inner">
+      <img src="{{ activity.photo_url }}" alt="{{ activity.name }}" loading="lazy">
+    </div>
+    <div class="gallery-type-badge">
+      <span class="fc-pill"><span class="sport-glyph">{{ activity.sport_type|sport_glyph }}</span> {{ activity.get_sport_type_display }}</span>
+    </div>
+    <div class="gallery-hover-overlay">
+      <div class="hov-title">{{ activity.name }}</div>
+      <div class="hov-meta">
+        <span class="sport-glyph">{{ activity.sport_type|sport_glyph }}</span> {{ activity.get_sport_type_display }} · {{ activity.distance_km }} km
+        <span class="hov-kudos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          {{ activity.kudos_count }}
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="gallery-item-footer">
+    <h3 class="gallery-item-title">{{ activity.name }}</h3>
+    <div class="gallery-item-meta">
+      <span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2"></rect><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line><line x1="4" y1="10" x2="20" y2="10"></line></svg>
+        {{ activity.start_date|date:"M j, Y" }}
+      </span>
+      <span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 20 10 7 14 13 17 9 21 20"></polyline></svg>
+        {{ activity.distance_km }} km
+      </span>
+    </div>
+    <div class="gallery-item-actions" onclick="event.stopPropagation()">
+      <span class="gi-act-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        <span>{{ activity.kudos_count }}</span>
+      </span>
+      <span class="gi-act-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span>{{ activity.comment_count }}</span>
+      </span>
+      <a class="gi-act-btn" style="margin-left:auto;" href="{{ activity.get_absolute_url }}" target="_blank" rel="noopener" title="View on Strava">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="9 4 4 4 4 20 20 20 20 15"></polyline><line x1="13" y1="11" x2="20" y2="4"></line><polyline points="14 4 20 4 20 10"></polyline></svg>
+      </a>
+    </div>
+  </div>
+</div>

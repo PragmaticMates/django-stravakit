@@ -16,7 +16,7 @@ DATABASES = {
 }
 
 INSTALLED_APPS = [
-    # unfold (and its filter contrib) must precede django.contrib.admin — strava.admin is
+    # unfold (and its filter contrib) must precede django.contrib.admin — stravakit.admin is
     # built entirely on unfold's decorators, so the admin tests need both installed.
     "unfold",
     "unfold.contrib.filters",
@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.sessions",
     "django_htmx",
-    "strava",
+    "stravakit",
 ]
 
 MIDDLEWARE = [

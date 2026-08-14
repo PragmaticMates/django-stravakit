@@ -1,0 +1,74 @@
+<div class="float-card" data-screen-label="Activity card"{% if hidden %} style="display:none"{% endif %}>
+  {% if show_close %}
+  <button class="fc-close" onclick="this.closest('.float-card').style.display='none'" aria-label="Close">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+  </button>
+  {% endif %}
+  {% comment %}Map cards drop the route trace — the route is already drawn on the map
+  behind the card. With a photo they show it as a full-bleed hero; without one they get a
+  sport-colored hero band (matching the route's colour on the map) instead of an empty
+  band, carrying the sport pill and PR badge.{% endcomment %}
+  {% if not map_card or activity.photo_url %}
+  {% comment %}Pre-apply fc-has-map on route cards so the photo starts as the corner
+  thumbnail — otherwise it renders full-bleed and visibly snaps to the corner once the
+  tile map is drawn client-side.{% endcomment %}
+  <div class="fc-map{% if map_card %} fc-photo-hero{% elif activity.polyline %} fc-has-map{% endif %}">
+    {% if activity.photo_url %}<img class="fc-photo" src="{{ activity.photo_url }}" alt="" aria-hidden="true">{% endif %}
+    {% if not map_card %}<svg class="fc-route" role="img" aria-label="Route trace"{% if activity.polyline %} data-polyline="{{ activity.polyline }}"{% endif %}></svg>{% endif %}
+    {% if activity.pb %}<span class="act-gcard-pr">★ PR</span>{% endif %}
+    <div class="fc-pills">
+      {% include "stravakit/widgets/_fc_pill.html" %}
+    </div>
+  </div>
+  {% else %}
+  <div class="fc-hero fc-hero--{{ activity.map_sport_type|default:'other' }}">
+    <div class="fc-pills">
+      {% include "stravakit/widgets/_fc_pill.html" %}
+      {% if activity.pb %}<span class="act-gcard-pr">★ PR</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+  <div class="fc-body">
+    <a href="{{ activity.get_absolute_url|default:'#' }}" class="fc-header-bg" target="_blank" rel="noopener">
+      <h1 class="fc-title">{{ activity.name }}</h1>
+      <p class="fc-datetime">{{ activity.start_date|date:"M j, Y" }}, {{ activity.start_date|time:"g:i A" }}</p>
+    </a>
+    <div class="fc-stats">
+      <div class="fc-stat-big">
+        <span class="fc-big-val">{{ activity.distance_km }} <span class="fc-big-unit">KM</span></span>
+      </div>
+      <div class="fc-stat-group">
+        <div class="fc-stat">
+          <span class="fc-val">{{ activity.pace_parts.0 }} <small>{{ activity.pace_parts.1 }}</small></span>
+          <span class="fc-lbl">{% if activity.is_speed_sport %}Speed{% else %}Pace{% endif %}</span>
+        </div>
+        <div class="fc-stat">
+          <span class="fc-val">{{ activity.duration }}</span>
+          <span class="fc-lbl">Time</span>
+        </div>
+        {% if not activity.is_swim_sport %}
+        <div class="fc-stat">
+          <span class="fc-val">{{ activity.elevation }} <small>m</small></span>
+          <span class="fc-lbl">Elev.</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="fc-engage">
+      <button class="fc-engbtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        {{ activity.kudos_count }}
+      </button>
+      <button class="fc-engbtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        {{ activity.comment_count }}
+      </button>
+      {% if activity.gear %}
+        <span class="fc-gear-tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"></path><path d="M5 18V9c0-1 .5-2 2-2h4l4 3h2c1 0 2 .5 2 2v6"></path><path d="M9 7V6"></path><path d="M5 14h14"></path></svg>
+          {{ activity.gear }}
+        </span>
+      {% endif %}
+    </div>
+  </div>
+</div>

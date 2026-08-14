@@ -11,8 +11,8 @@ import pytest
 from django.contrib import admin, messages
 from django.test import RequestFactory
 
-from strava.admin import ActivityAdmin
-from strava.models import Activity
+from stravakit.admin import ActivityAdmin
+from stravakit.models import Activity
 
 
 @pytest.fixture
@@ -25,12 +25,12 @@ def request_():
     # With a referer the action redirects back without resolving a URL name — the test
     # settings define no urlconf (see tests/test_multi_athlete.py), and the admin always
     # sends one in practice.
-    return RequestFactory().get("/admin/strava/activity/", HTTP_REFERER="/admin/strava/activity/")
+    return RequestFactory().get("/admin/stravakit/activity/", HTTP_REFERER="/admin/stravakit/activity/")
 
 
 class TestImportActions:
     def test_import_strava_runs_the_incremental_import(self, activity_admin, request_):
-        with patch("strava.admin.call_command") as call_command, \
+        with patch("stravakit.admin.call_command") as call_command, \
              patch.object(ActivityAdmin, "message_user"):
             activity_admin.import_strava(request_)
 
@@ -39,7 +39,7 @@ class TestImportActions:
         assert set(call_command.call_args.kwargs) == {"stdout"}
 
     def test_import_missing_passes_the_window(self, activity_admin, request_):
-        with patch("strava.admin.call_command") as call_command, \
+        with patch("stravakit.admin.call_command") as call_command, \
              patch.object(ActivityAdmin, "message_user"):
             activity_admin.import_strava_missing(request_)
 
@@ -53,7 +53,7 @@ class TestImportActions:
     def test_failure_is_reported_not_raised(self, activity_admin, request_):
         # A rejected import (expired token, rate limit, outage) must reach the operator as
         # a message rather than a 500.
-        with patch("strava.admin.call_command", side_effect=Exception("boom")), \
+        with patch("stravakit.admin.call_command", side_effect=Exception("boom")), \
              patch.object(ActivityAdmin, "message_user") as message_user:
             activity_admin.import_strava_missing(request_)
 
@@ -64,7 +64,7 @@ class TestImportActions:
             stdout.write("Erik (1): 38 summaries, 38 already stored, 0 to fetch\n")
             stdout.write("Done: 1 athlete(s), 38 summaries, 38 skipped, 0 imported, 0 updated\n")
 
-        with patch("strava.admin.call_command", side_effect=fake), \
+        with patch("stravakit.admin.call_command", side_effect=fake), \
              patch.object(ActivityAdmin, "message_user") as message_user:
             activity_admin.import_strava_missing(request_)
 

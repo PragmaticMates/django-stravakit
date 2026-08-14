@@ -1,0 +1,98 @@
+{% load static django_htmx %}
+{# `athlete`, `athlete_id` and `athletes` come from AthleteScopedMixin (see strava.views). #}
+<!DOCTYPE html>
+<html lang="en" data-density="comfortable">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block brand %}django-stravakit{% endblock %} · {% block title %}{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+{# Warm up the map-tile CDN so activity-card maps load without a handshake delay. #}
+<link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossorigin>
+<link rel="preconnect" href="https://b.basemaps.cartocdn.com" crossorigin>
+{% block fonts %}<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">{% endblock %}
+<link rel="stylesheet" href="{% static 'stravakit/css/strava.css' %}">
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<header class="nav" id="site-nav" data-screen-label="Top nav">
+  <a class="logo" href="{% url 'stravakit:dashboard' %}">
+    {% block logo %}
+    <svg width="200" height="32" viewBox="0 0 200 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="django-stravakit">
+      <rect x="2" y="8" width="16" height="16" rx="2.5" transform="rotate(45 10 16)" fill="var(--accent)"/>
+      <rect x="5.5" y="11.5" width="9" height="9" rx="1.5" transform="rotate(45 10 16)" fill="white" opacity="0.28"/>
+      <circle cx="10" cy="16" r="2" fill="white" opacity="0.9"/>
+      <text x="30" y="23" font-family="'Barlow Condensed', 'Arial Narrow', sans-serif" font-weight="700" font-size="21" letter-spacing="0.01em">
+        <tspan fill="#1F1B18">django</tspan><tspan fill="var(--accent)">-strava</tspan><tspan fill="var(--ink-3)">kit</tspan>
+      </text>
+    </svg>
+    {% endblock %}
+  </a>
+  <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" onclick="toggleNav(event)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+  </button>
+  <nav class="nav-items" id="nav-items">
+    <a class="nav-item" href="{% url 'stravakit:dashboard' %}"{% if active_page == 'dashboard' %} aria-current="page"{% endif %}>
+      <svg viewBox="0 0 24 24"><polyline points="3 11 12 4 21 11"></polyline><polyline points="5 10 5 20 19 20 19 10"></polyline></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="{% url 'stravakit:activities' %}"{% if active_page == 'activities' %} aria-current="page"{% endif %}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"></polygon></svg>
+      Activities
+    </a>
+    <a class="nav-item" href="{% url 'stravakit:gear' %}"{% if active_page == 'gear' %} aria-current="page"{% endif %}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"></path><path d="M5 18V9c0-1 .5-2 2-2h4l4 3h2c1 0 2 .5 2 2v6"></path><path d="M9 7V6"></path><path d="M5 14h14"></path></svg>
+      Gear
+    </a>
+    <a class="nav-item" href="{% url 'stravakit:gallery' %}"{% if active_page == 'gallery' %} aria-current="page"{% endif %}>
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10" r="1.6"></circle><polyline points="5 18 11 12 15 16 18 13 21 16"></polyline></svg>
+      Gallery
+    </a>
+    <a class="nav-item" href="{% url 'stravakit:compare' %}"{% if active_page == 'compare' %} aria-current="page"{% endif %}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="8 7 3 12 8 17"></polyline><polyline points="16 7 21 12 16 17"></polyline></svg>
+      Compare
+    </a>
+  </nav>
+  <div class="nav-user" id="user-menu-trigger" onclick="toggleUserMenu(event)" aria-haspopup="true" aria-expanded="false">
+    <span class="avatar-slot" aria-hidden="true">
+      {% if athlete.profile %}<img src="{{ athlete.profile }}" alt="">{% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4.5"></circle><path d="M3 21c0-4 4-7 9-7s9 3 9 7"></path></svg>{% endif %}
+    </span>
+    <span class="uname">{{ athlete.full_name|default:"Athlete" }}</span>
+    <span class="caret" id="user-caret">▾</span>
+    <div class="user-dropdown" id="user-dropdown" role="menu">
+      <a class="user-dd-item" href="{% if athlete %}{{ athlete.profile_url }}{% else %}#{% endif %}" role="menuitem"{% if athlete %} target="_blank" rel="noopener"{% endif %}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4.5"></circle><path d="M3 21c0-4 4-7 9-7s9 3 9 7"></path></svg>
+        Profile
+      </a>
+      <a class="user-dd-item" href="{% if athlete %}{{ athlete.followers_url }}{% else %}#{% endif %}" role="menuitem"{% if athlete %} target="_blank" rel="noopener"{% endif %}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2 21c0-3.5 3.1-6 7-6s7 2.5 7 6"></path><circle cx="18" cy="9" r="2.5"></circle><path d="M16 21c0-2.5 2-4 4.5-4"></path></svg>
+        Followers{% if athlete.follower_count is not None %} · {{ athlete.follower_count }}{% endif %}
+      </a>
+      <a class="user-dd-item" href="{% if athlete %}{{ athlete.following_url }}{% else %}#{% endif %}" role="menuitem"{% if athlete %} target="_blank" rel="noopener"{% endif %}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="15" cy="8" r="3.5"></circle><path d="M8 21c0-3.5 3.1-6 7-6s7 2.5 7 6"></path><circle cx="6" cy="9" r="2.5"></circle><path d="M1 21c0-2.5 2-4 4.5-4"></path></svg>
+        Following{% if athlete.friend_count is not None %} · {{ athlete.friend_count }}{% endif %}
+      </a>
+      {% if athletes|length > 1 %}
+      <div class="user-dd-sep" role="separator"></div>
+      <div class="user-dd-label">Switch athlete</div>
+      {% for a in athletes %}
+      <a class="user-dd-item{% if athlete and a.id == athlete.id %} is-active{% endif %}" href="{{ request.path }}?athlete={{ a.id }}" role="menuitem">
+        {% if a.profile %}<img src="{{ a.profile }}" alt="" width="17" height="17">{% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4.5"></circle><path d="M3 21c0-4 4-7 9-7s9 3 9 7"></path></svg>{% endif %}
+        {{ a.full_name|default:"Athlete" }}
+      </a>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% block content %}{% endblock %}
+
+{% htmx_script %}
+<script src="{% static 'stravakit/js/ui.js' %}"></script>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

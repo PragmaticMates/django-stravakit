@@ -26,15 +26,15 @@ django-stravakit (distribution name; the app is imported as `strava`) is a reusa
 
 Templates and static files are app-namespaced (so names can't collide with another app):
 
-- **templates/strava/pages/** - full pages: `base.html` and `dashboard/activities/gear/gallery.html`.
-- **templates/strava/hx/** - htmx response fragments (no leading underscore): the `*_results.html`
+- **templates/stravakit/pages/** - full pages: `base.html` and `dashboard/activities/gear/gallery.html`.
+- **templates/stravakit/hx/** - htmx response fragments (no leading underscore): the `*_results.html`
   fragments returned for htmx requests, plus the `dashboard_*.html` section partials that are
   OOB-swapped into the dashboard and also `{% include %}`d by the full dashboard page.
-- **templates/strava/widgets/** - reusable `{% include %}` partials (activity card, gear card,
+- **templates/stravakit/widgets/** - reusable `{% include %}` partials (activity card, gear card,
   sport icon, `_fc_pill.html`).
-- **templates/strava/tables/** - table fragments.
-- **static/strava/css/** - `strava.css`.
-- **static/strava/js/** - feature-split modules: `charts.js` (shared `DSCharts` SVG/canvas render
+- **templates/stravakit/tables/** - table fragments.
+- **static/stravakit/css/** - `stravakit.css`.
+- **static/stravakit/js/** - feature-split modules: `charts.js` (shared `DSCharts` SVG/canvas render
   library), `ui.js` (site-wide nav/menu/lightbox/timing, loaded by `base.html`), `dashboard-map.js`
   (Leaflet map), `dashboard.js` (records/trends/calendar wiring, activity modal, gear donut),
   `activities.js`, `gallery.js`, `gear.js`. There is no inline `<script>` in the templates.

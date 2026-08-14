@@ -1,0 +1,102 @@
+{% extends "stravakit/pages/base.html" %}
+{% load static humanize %}
+
+{% block title %}Gallery{% endblock %}
+
+{% block content %}
+<!-- ============ Gallery Page ============ -->
+<main class="gallery-page" data-screen-label="Gallery">
+
+  <!-- Hero / header -->
+  <div class="gallery-hero">
+    <div class="gallery-hero-left">
+      <p class="gallery-hero-eyebrow">Media Library</p>
+      <h1>Gallery</h1>
+      <p class="gallery-hero-count" id="gallery-count">{{ count|intcomma }} photo{{ count|pluralize }}</p>
+    </div>
+
+    <form class="gallery-filters" id="gallery-filters"
+          hx-get="{% url 'stravakit:gallery' %}"
+          hx-target="#gallery-results"
+          hx-swap="innerHTML"
+          hx-push-url="true"
+          hx-trigger="change, keyup delay:300ms from:#gallery-search">
+      <input type="hidden" name="athlete" value="{{ athlete_id }}">
+      <input type="hidden" name="sport" id="g-sport" value="{{ sport }}">
+
+      <div class="gf-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" placeholder="Search photos…" id="gallery-search" name="q" value="{{ q }}">
+      </div>
+
+      {% include "stravakit/widgets/sport_filter.html" with btn_id="gallery-sport-btn" options_id="gallery-sport-options" groups_id="gallery-sport-groups" current=sport trigger_class="af-sport-trigger sport-pill" %}
+
+      <div class="af-sport-wrap">
+        <select class="af-sport-select" name="year">
+          <option value="all"{% if year == 'all' %} selected{% endif %}>All years</option>
+          {% for y in year_list %}<option value="{{ y }}"{% if year == y|stringformat:'s' %} selected{% endif %}>{{ y }}</option>{% endfor %}
+        </select>
+        <span class="af-sport-caret"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+      </div>
+
+      <div class="af-sport-wrap">
+        <select class="af-sport-select" name="sort">
+          <option value="newest"{% if sort == 'newest' %} selected{% endif %}>Newest first</option>
+          <option value="oldest"{% if sort == 'oldest' %} selected{% endif %}>Oldest first</option>
+          <option value="kudos"{% if sort == 'kudos' %} selected{% endif %}>Most kudos</option>
+        </select>
+        <span class="af-sport-caret"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+      </div>
+
+      <div class="view-toggle" id="view-toggle">
+        <button type="button" class="active" data-view="grid" onclick="setView('grid', this)" title="Grid — with activity info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <rect x="3" y="3" width="8" height="8" rx="1"></rect>
+            <line x1="3" y1="14" x2="11" y2="14"></line><line x1="3" y1="17" x2="9" y2="17"></line>
+            <rect x="13" y="3" width="8" height="8" rx="1"></rect>
+            <line x1="13" y1="14" x2="21" y2="14"></line><line x1="13" y1="17" x2="19" y2="17"></line>
+          </svg>
+        </button>
+        <button type="button" data-view="squares" onclick="setView('squares', this)" title="Squares — photo only, 1:1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <rect x="3" y="3" width="8" height="8" rx="1"></rect>
+            <rect x="13" y="3" width="8" height="8" rx="1"></rect>
+            <rect x="3" y="13" width="8" height="8" rx="1"></rect>
+            <rect x="13" y="13" width="8" height="8" rx="1"></rect>
+          </svg>
+        </button>
+        <button type="button" data-view="wall" onclick="setView('wall', this)" title="Wall — original ratio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <rect x="3" y="3" width="8" height="12" rx="1"></rect>
+            <rect x="13" y="3" width="8" height="7" rx="1"></rect>
+            <rect x="13" y="12" width="8" height="9" rx="1"></rect>
+            <rect x="3" y="17" width="8" height="4" rx="1"></rect>
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Grid — rendered server-side, swapped by htmx -->
+  <div id="gallery-results">
+    {% include "stravakit/hx/gallery_results.html" %}
+  </div>
+
+</main>
+
+{% comment %}
+Centered overlay for an activity's card, opened by clicking a gallery item. The card
+HTML is fetched lazily from ActivityCardView (the same endpoint the activities,
+dashboard and compare pages use) into .act-modal-host.
+{% endcomment %}
+<div id="activity-modal" class="act-modal" data-card-url="{% url 'stravakit:activity_card' 0 %}" hidden>
+  <div class="act-modal-backdrop"></div>
+  <div class="act-modal-host"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'stravakit/js/charts.js' %}"></script>
+<script src="{% static 'stravakit/js/sport-filter.js' %}"></script>
+<script src="{% static 'stravakit/js/gallery.js' %}"></script>
+{% endblock %}

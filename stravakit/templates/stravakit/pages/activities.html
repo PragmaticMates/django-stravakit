@@ -1,0 +1,101 @@
+{% extends "stravakit/pages/base.html" %}
+{% load static humanize %}
+
+{% block title %}Activities{% endblock %}
+
+{% block content %}
+<main class="acts-page" data-screen-label="Activities">
+
+  <!-- Hero -->
+  <div class="acts-hero">
+    <div>
+      <p class="acts-hero-eyebrow">Training log</p>
+      <h1>Activities</h1>
+      <p class="acts-hero-sub" id="hero-sub">{{ summary.count }} activities</p>
+    </div>
+    <a href="https://www.strava.com/upload/device" target="_blank" rel="noopener" class="acts-upload-btn">
+      <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path></svg>
+      Upload Activity
+    </a>
+  </div>
+
+  <!-- Filter bar -->
+  <form class="acts-filters" id="acts-filters"
+        hx-get="{% url 'stravakit:activities' %}"
+        hx-target="#acts-results"
+        hx-swap="innerHTML"
+        hx-push-url="true"
+        hx-trigger="change, keyup delay:300ms from:#search-input">
+    <input type="hidden" name="athlete" value="{{ athlete_id }}">
+    <input type="hidden" name="view" id="f-view" value="{{ view }}">
+    <input type="hidden" name="sort" id="f-sort" value="{{ sort }}">
+    <input type="hidden" name="dir" id="f-dir" value="{{ dir }}">
+
+    <div class="af-search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" placeholder="Search activities…" id="search-input" name="q" value="{{ q }}">
+    </div>
+
+    <div class="af-sep"></div>
+
+    <input type="hidden" name="sport" id="f-sport" value="{{ sport }}">
+    {% include "stravakit/widgets/sport_filter.html" with btn_id="acts-sport-btn" options_id="acts-sport-options" groups_id="acts-sport-groups" current=sport trigger_class="af-sport-trigger sport-pill" %}
+
+    <input type="hidden" name="gear" id="f-gear" value="{{ gear }}">
+    {% include "stravakit/widgets/filter_pill.html" with btn_id="acts-gear-btn" options_id="acts-gear-options" icon="gear" all_label="All Gear" current=gear options=gear_options trigger_class="af-sport-trigger" %}
+
+    <div class="af-sep"></div>
+
+    <input type="hidden" name="year" id="f-year" value="{{ year }}">
+    {% include "stravakit/widgets/filter_pill.html" with btn_id="acts-year-btn" options_id="acts-year-options" icon="year" all_label="All Years" current=year options=year_options trigger_class="af-sport-trigger" %}
+
+    <div class="af-sep"></div>
+
+    <div class="af-dist" id="dist-slider" data-ceil="{{ dist_ceil }}">
+      <span class="af-dist-label">Distance</span>
+      <div class="af-dist-track">
+        <div class="af-dist-fill"></div>
+        <input type="range" class="af-dist-range af-dist-min" name="dist_min"
+               min="0" max="{{ dist_ceil }}" step="1" value="{{ dist_min }}">
+        <input type="range" class="af-dist-range af-dist-max" name="dist_max"
+               min="0" max="{{ dist_ceil }}" step="1" value="{{ dist_max }}">
+      </div>
+      <span class="af-dist-value"><output class="af-dist-lo">{{ dist_min }}</output>–<output class="af-dist-hi">{{ dist_max }}</output> km</span>
+    </div>
+    {{ dist_ceils|json_script:"dist-ceils-data" }}
+
+    <div class="af-view-toggle">
+      <button type="button" class="af-view-btn{% if view != 'table' %} active{% endif %}" id="view-grid" onclick="setView('grid')" title="Grid view">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+      </button>
+      <button type="button" class="af-view-btn{% if view == 'table' %} active{% endif %}" id="view-table" onclick="setView('table')" title="Table view">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="9" x2="9" y2="21"></line></svg>
+      </button>
+    </div>
+  </form>
+
+  <!-- Activity feed — rendered server-side, swapped by htmx -->
+  <div id="acts-results">
+    {% include "stravakit/hx/activities_results.html" %}
+  </div>
+
+  {% comment %}
+  Centered overlay for an activity's card, opened by clicking a table row. The card
+  HTML is fetched lazily from ActivityCardView (the same endpoint the dashboard and
+  compare pages use) into .act-modal-host.
+  {% endcomment %}
+  <div id="activity-modal" class="act-modal" data-card-url="{% url 'stravakit:activity_card' 0 %}" hidden>
+    <div class="act-modal-backdrop"></div>
+    <div class="act-modal-host"></div>
+  </div>
+
+</main>
+
+{% block extra_js %}
+<script src="{% static 'stravakit/js/charts.js' %}"></script>
+<script src="{% static 'stravakit/js/sport-filter.js' %}"></script>
+<script src="{% static 'stravakit/js/pill-filter.js' %}"></script>
+<script src="{% static 'stravakit/js/dist-slider.js' %}"></script>
+<script src="{% static 'stravakit/js/activities.js' %}"></script>
+{% endblock %}
+{% endblock %}

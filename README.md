@@ -20,9 +20,9 @@ Python dependencies (installed automatically):
 pip install django-stravakit
 ```
 
-The distribution is `django-stravakit`; the app it installs is imported as `strava`.
+The distribution is `django-stravakit`; the app it installs is imported as `stravakit`.
 
-Add `strava`, `django.contrib.humanize` and `django_htmx` to `INSTALLED_APPS`, and the htmx middleware to `MIDDLEWARE`:
+Add `stravakit`, `django.contrib.humanize` and `django_htmx` to `INSTALLED_APPS`, and the htmx middleware to `MIDDLEWARE`:
 
 ```python
 INSTALLED_APPS = [
@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     "unfold",
     "django.contrib.humanize",
     "django_htmx",
-    "strava",
+    "stravakit",
 ]
 
 MIDDLEWARE = [
@@ -50,7 +50,7 @@ from django.urls import include, path
 
 urlpatterns = [
     # ...
-    path("strava/", include("strava.urls", namespace="strava")),
+    path("strava/", include("stravakit.urls", namespace="stravakit")),
 ]
 ```
 
@@ -137,19 +137,19 @@ opening one enormous window, so a single run can't exhaust the daily quota.
 
 ### Pages
 
-The app ships a set of htmx-powered pages (registered under the `strava` URL namespace).
+The app ships a set of htmx-powered pages (registered under the `stravakit` URL namespace).
 All filtering, sorting and stat recalculation happens server-side and is swapped in
 without a full page reload.
 
-- **Dashboard** (`strava:dashboard`) — headline stats, "By the Numbers" totals,
+- **Dashboard** (`stravakit:dashboard`) — headline stats, "By the Numbers" totals,
   personal records (including "Furthest from Home"), run-performance breakdown, gear
   summary, the latest activity, and an activity map. The map controls (search +
   sport/gear/year filters) recompute every section live.
-- **Activities** (`strava:activities`) — searchable, sortable list of activities with
+- **Activities** (`stravakit:activities`) — searchable, sortable list of activities with
   filtering by sport, gear and month, a summary band (distance, elevation, time, this
   week) and grid/table views.
-- **Gear** (`strava:gear`) — gear cards showing usage, wear level and replacement alerts.
-- **Gallery** (`strava:gallery`) — photo gallery of activities that have images.
+- **Gear** (`stravakit:gear`) — gear cards showing usage, wear level and replacement alerts.
+- **Gallery** (`stravakit:gallery`) — photo gallery of activities that have images.
 
 ### Admin interface
 
@@ -172,7 +172,7 @@ The app registers `Activity` and `Gear` models in the Django admin with:
 
 ### Customising the site chrome
 
-The nav name, avatar and follower/following counts are driven by the imported `Athlete` — nothing is hardcoded. The two branding elements in `strava/pages/base.html` are exposed as template blocks, so a consuming project can override them by extending the base template:
+The nav name, avatar and follower/following counts are driven by the imported `Athlete` — nothing is hardcoded. The two branding elements in `stravakit/pages/base.html` are exposed as template blocks, so a consuming project can override them by extending the base template:
 
 - `{% block brand %}` — the name shown in the page `<title>` (defaults to `django-stravakit`)
 - `{% block logo %}` — the header logo SVG

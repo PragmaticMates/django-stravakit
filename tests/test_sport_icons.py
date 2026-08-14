@@ -1,8 +1,8 @@
-"""Tests for the sport-glyph resolver (strava.sport_icons)."""
+"""Tests for the sport-glyph resolver (stravakit.sport_icons)."""
 from django.utils.safestring import SafeString
 
-from strava import sport_icons
-from strava.sport_icons import icon_for, icon_html
+from stravakit import sport_icons
+from stravakit.sport_icons import icon_for, icon_html
 
 
 class TestIconFor:

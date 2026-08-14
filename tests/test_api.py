@@ -1,4 +1,4 @@
-"""Tests for strava.api: error formatting, token parsing and the rate-limit retry.
+"""Tests for stravakit.api: error formatting, token parsing and the rate-limit retry.
 
 These don't touch the DB or a real Strava connection — the ``stravalib.Client``
 is never constructed (only ``StravaApi.get_token_expiration`` is exercised, which
@@ -11,8 +11,8 @@ from unittest.mock import patch
 import pytest
 from stravalib import exc
 
-from strava import api
-from strava.api import StravaApi, format_strava_error, rate_limited
+from stravakit import api
+from stravakit.api import StravaApi, format_strava_error, rate_limited
 
 
 class FakeResponse:

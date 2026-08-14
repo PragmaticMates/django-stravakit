@@ -1,0 +1,38 @@
+{% load humanize %}
+<!-- Summary bar -->
+<div class="acts-summary">
+  <div class="acts-summary-item">
+    <span class="acts-summary-val">{{ summary.count|intcomma }}</span>
+    <span class="acts-summary-lbl">Activities</span>
+  </div>
+  <div class="acts-summary-item">
+    <span class="acts-summary-val">{{ summary.distance_km|intcomma }}<span style="font-size:16px;font-weight:600;color:var(--ink-3)"> km</span></span>
+    <span class="acts-summary-lbl">Distance</span>
+  </div>
+  <div class="acts-summary-item">
+    <span class="acts-summary-val">{{ summary.elevation_m|intcomma }}<span style="font-size:16px;font-weight:600;color:var(--ink-3)"> m</span></span>
+    <span class="acts-summary-lbl">Elevation</span>
+  </div>
+  <div class="acts-summary-item">
+    <span class="acts-summary-val">{{ summary.time_h|intcomma }}<span style="font-size:16px;font-weight:600;color:var(--ink-3)"> h</span></span>
+    <span class="acts-summary-lbl">Time</span>
+  </div>
+  <div class="acts-summary-item">
+    <span class="acts-summary-val">{{ summary.this_week }}</span>
+    <span class="acts-summary-lbl">This week</span>
+  </div>
+</div>
+
+<!-- Activity feed -->
+{% if view == 'table' %}
+  {% include "stravakit/tables/activities.html" %}
+{% else %}
+  <div class="acts-feed" id="feed-grid">
+    {% for activity in activities %}
+      {% include "stravakit/widgets/activity.html" with activity=activity show_close=False %}
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- Out-of-band hero count update -->
+<p class="acts-hero-sub" id="hero-sub" hx-swap-oob="true">{{ summary.count }} activities</p>

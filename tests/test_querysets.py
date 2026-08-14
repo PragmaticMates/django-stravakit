@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from strava.models import Activity, Gear
+from stravakit.models import Activity, Gear
 
 
 def make(id, sport_type="Run", distance=5000, moving_time=1800,

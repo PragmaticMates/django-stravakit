@@ -1,0 +1,226 @@
+{% extends "stravakit/pages/base.html" %}
+{% load static humanize %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" integrity="sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc=" crossorigin="">{% endblock %}
+
+{% block fonts %}<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Oswald:wght@400;500;600;700&family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Raleway:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<section class="maphero" data-screen-label="Activity map">
+  <div id="activity-map" class="mapfill" data-screen-label="Activity map"></div>
+  <div class="map-tint" id="map-tint"></div>
+  <div class="zoom">
+    <button type="button" class="zoom-end" id="map-zoom-in" aria-label="Zoom in">+</button>
+    <input type="range" class="zoom-slider" id="map-zoom-slider" aria-label="Zoom level" step="1">
+    <button type="button" class="zoom-end" id="map-zoom-out" aria-label="Zoom out">−</button>
+  </div>
+  <button type="button" class="map-reset" id="map-reset" aria-label="Reset view" title="Reset view">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3"></path><path d="M16 4h3a1 1 0 0 1 1 1v3"></path><path d="M20 16v3a1 1 0 0 1-1 1h-3"></path><path d="M8 20H5a1 1 0 0 1-1-1v-3"></path></svg>
+  </button>
+  <button type="button" class="map-routes-toggle active" id="map-routes-toggle" aria-label="Show routes" aria-pressed="true" title="Show routes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="5" r="2.5"></circle><path d="M8 18 C 14 16, 12 8, 16 6"></path></svg>
+  </button>
+  <button type="button" class="map-fullscreen" id="map-fullscreen" aria-label="Toggle fullscreen" title="Fullscreen">
+    <svg class="fs-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+    <svg class="fs-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+  </button>
+  <div class="map-filters">
+    <div class="map-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" placeholder="Search…" class="map-search-input">
+    </div>
+    {% include "stravakit/widgets/filter_pill.html" with btn_id="map-year-btn" options_id="map-year-options" icon="year" all_label="All Years" current=year options=year_options trigger_class="pill-btn" %}
+    {% include "stravakit/widgets/sport_filter.html" with btn_id="map-sport-btn" options_id="map-sport-options" groups_id="map-sport-groups" current=sport trigger_class="pill-btn sport-pill" %}
+    {% include "stravakit/widgets/filter_pill.html" with btn_id="map-gear-btn" options_id="map-gear-options" icon="gear" all_label="All Gear" current=gear options=gear_options trigger_class="pill-btn" %}
+    <div class="af-dist" id="map-dist-slider" data-ceil="{{ dist_ceil }}">
+      <span class="af-dist-label">Distance</span>
+      <div class="af-dist-track">
+        <div class="af-dist-fill"></div>
+        <input type="range" class="af-dist-range af-dist-min" min="0" max="{{ dist_ceil }}" step="1" value="{{ dist_min }}" aria-label="Minimum distance (km)">
+        <input type="range" class="af-dist-range af-dist-max" min="0" max="{{ dist_ceil }}" step="1" value="{{ dist_max }}" aria-label="Maximum distance (km)">
+      </div>
+      <span class="af-dist-value"><output class="af-dist-lo">{{ dist_min }}</output>–<output class="af-dist-hi">{{ dist_max }}</output> km</span>
+    </div>
+  </div>
+  {{ dist_ceils|json_script:"map-dist-ceils" }}
+  {% include "stravakit/hx/dashboard_map_note.html" %}
+  {% comment %}
+  Activity cards are fetched lazily when a marker is clicked (see map JS) rather than
+  server-rendered for every marker — rendering ~1000 hidden cards dominated page load.
+  {% endcomment %}
+  <div id="map-card-host" data-card-url="{% url 'stravakit:activity_card' 0 %}"></div>
+</section>
+
+{% comment %}
+Hidden mirror of the map's filter state. The map JS keeps these inputs in sync and
+fires the `refresh` trigger, so a filter change recomputes every dependent section
+server-side; the response arrives as out-of-band swaps absorbed by #dash-sink.
+{% endcomment %}
+<form id="dash-filters" hx-get="{% url 'stravakit:dashboard' %}" hx-target="#dash-sink"
+      hx-swap="innerHTML" hx-trigger="refresh" hx-push-url="false"
+      hx-sync="this:replace" style="display:none">
+  <input type="hidden" name="athlete" value="{{ athlete_id }}">
+  <input type="hidden" name="q" id="df-q" value="{{ q }}">
+  <input type="hidden" name="sport" id="df-sport" value="{{ sport }}">
+  <input type="hidden" name="gear" id="df-gear" value="{{ gear }}">
+  <input type="hidden" name="year" id="df-year" value="{{ year }}">
+  <input type="hidden" name="dist_min" id="df-dist_min" value="{{ dist_min }}">
+  <input type="hidden" name="dist_max" id="df-dist_max" value="{{ dist_max }}">
+</form>
+<div id="dash-sink" hidden></div>
+
+{% comment %}
+Centered overlay for an activity's card, opened from clickable widgets such as the
+Personal Records rows. The card HTML is fetched lazily from ActivityCardView (same
+endpoint the map uses) into .act-modal-host.
+{% endcomment %}
+<div id="activity-modal" class="act-modal" data-card-url="{% url 'stravakit:activity_card' 0 %}" hidden>
+  <div class="act-modal-backdrop"></div>
+  <div class="act-modal-host"></div>
+</div>
+
+<main class="page">
+
+  <!-- ============ Stat band ============ -->
+  {% include "stravakit/hx/dashboard_statband.html" %}
+
+
+  <!-- ============ Records · performance · AOTY ============ -->
+  <h2 class="section-title" style="margin-bottom: 0; margin-top: var(--gap);">Achievements</h2>
+  <div class="row-mid" data-screen-label="Records and performance">
+    <section class="card">
+      <div class="card-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17a7 7 0 0 0 7-7V3H5v7a7 7 0 0 0 7 7z"></path><path d="M5 7H2v2a3 3 0 0 0 3 3m14-5h3v2a3 3 0 0 1-3 3"></path><path d="M8 21h8m-4-4v4"></path></svg>
+        <h2 class="card-title">Personal Records</h2>
+      </div>
+      <div class="tabs" id="rec-tabs" role="tablist">
+        <button role="tab" data-sport="Running" aria-selected="true">Running</button>
+        <button role="tab" data-sport="Cycling" aria-selected="false">Cycling</button>
+        <button role="tab" data-sport="Hiking" aria-selected="false">Hiking</button>
+        <button role="tab" data-sport="Swimming" aria-selected="false">Swimming</button>
+      </div>
+      <div id="rec-list"></div>
+    </section>
+
+    {% include "stravakit/hx/dashboard_run_performance.html" %}
+
+    {% include "stravakit/hx/dashboard_aoty.html" %}
+
+  </div>
+
+  <!-- ============ Latest activities ============ -->
+  <div class="row" data-screen-label="Latest activities">
+    <div class="latest-act-wrap">
+      <h2 class="section-title">Latest Activities</h2>
+      {% include "stravakit/hx/dashboard_latest.html" %}
+    </div><!-- /.latest-act-wrap -->
+  </div><!-- /.row -->
+
+
+  <!-- ============ Row 1: Trends + AOTY ============ -->
+  <h2 class="section-title" style="margin-bottom: 0;">Training Overview</h2>
+  <div class="row-trends-aoty" data-screen-label="Trends and highlights">
+    <section class="card">
+      <div class="card-head">
+        <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"></rect><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line><line x1="4" y1="10" x2="20" y2="10"></line></svg>
+        <h2 class="card-title">Activity Calendar</h2>
+        <span class="spacer"></span>
+        <div class="cal-nav">
+          <button id="cal-prev" type="button" aria-label="Earlier weeks">‹</button>
+          <span id="cal-range" class="cal-range"></span>
+          <button id="cal-next" type="button" aria-label="Later weeks">›</button>
+        </div>
+      </div>
+      <div class="dotcal">
+        <span></span>
+        <span class="dh">M</span><span class="dh">T</span><span class="dh">W</span><span class="dh">T</span><span class="dh">F</span><span class="dh">S</span><span class="dh">S</span>
+        <div id="dotcal-rows" style="display: contents;"></div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="8" rx="1"></rect><rect x="10" y="6" width="4" height="14" rx="1"></rect><rect x="17" y="9" width="4" height="11" rx="1"></rect></svg>
+        <h2 class="card-title">Trends</h2>
+        <span class="spacer"></span>
+        <div class="seg" id="seg-metric" style="margin-left: auto;">
+          <button data-metric="km" aria-pressed="true">Distance</button>
+          <button data-metric="hours" aria-pressed="false">Time</button>
+          <button data-metric="elev" aria-pressed="false">Elevation</button>
+          <button data-metric="pace" aria-pressed="false">Pace</button>
+          <button data-metric="acts" aria-pressed="false">Activities</button>
+        </div>
+        <div class="seg" id="seg-range" style="margin-left: 10px;">
+          <button data-range="weekly" aria-pressed="true">Weekly</button>
+          <button data-range="monthly" aria-pressed="false">Monthly</button>
+          <button data-range="yearly" aria-pressed="false">Yearly</button>
+        </div>
+      </div>
+      <div class="trend-host">
+        <div id="trend-host" style="position: absolute; inset: 0;"></div>
+        <div class="chart-tip" id="tip-trend"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ Row 2: Gear + Fun Stats ============ -->
+  <h2 class="section-title" style="margin-bottom: 0; margin-top: var(--gap);">Gear Stats</h2>
+  <div class="row-gear-fun" data-screen-label="Gear and stats">
+    <section class="card" data-screen-label="Gear">
+      <div class="card-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"></path><path d="M5 18V9c0-1 .5-2 2-2h4l4 3h2c1 0 2 .5 2 2v6"></path><path d="M9 7V6"></path><path d="M5 14h14"></path></svg>
+        <h2 class="card-title">Gear Health</h2>
+      </div>
+      {% include "stravakit/hx/dashboard_gear_body.html" %}
+    </section>
+
+    <section class="card" data-screen-label="Gear usage">
+      <div class="card-head">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5a8.5 8.5 0 0 1 6 14.5"></path><path d="M12 3.5a8.5 8.5 0 0 0-6 14.5"></path></svg>
+        <h2 class="card-title">Gear Usage</h2>
+        <span class="spacer"></span>
+        <div class="seg" id="seg-gear-metric" style="margin-left: auto;">
+          <button data-gmetric="acts" aria-pressed="true">Activities</button>
+          <button data-gmetric="dist" aria-pressed="false">Distance</button>
+        </div>
+      </div>
+      <div class="gear-donut-wrap">
+        <canvas id="gear-donut" class="gear-donut-canvas"></canvas>
+        <div class="gear-donut-legend" id="gear-donut-legend"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ Fun Stats ============ -->
+  <h2 class="section-title" style="margin-bottom: 0; margin-top: var(--gap);">By the Numbers</h2>
+  {% include "stravakit/hx/dashboard_numbers.html" %}
+
+  <footer class="foot" data-screen-label="Footer">
+    <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"></rect><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line><line x1="4" y1="10" x2="20" y2="10"></line></svg>
+    <span id="foot-updated">Last updated: {{ last_updated|date:"F j, Y, H:i"|default:"never" }}</span>
+    {% if user.is_superuser %}
+    <button type="button" class="foot-refresh" aria-label="Refresh" title="Import latest from Strava"
+            hx-post="{% url 'stravakit:refresh' %}?athlete={{ athlete_id }}"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+            hx-target="#dash-sink" hx-swap="innerHTML"
+            hx-disabled-elt="this" hx-indicator="this">⟳</button>
+    {% endif %}
+  </footer>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+{% include "stravakit/hx/dashboard_data.html" %}
+{{ map_markers|json_script:"map-markers" }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=" crossorigin=""></script>
+<script src="{% static 'stravakit/js/charts.js' %}"></script>
+<script src="{% static 'stravakit/js/sport-filter.js' %}"></script>
+<script src="{% static 'stravakit/js/pill-filter.js' %}"></script>
+<script src="{% static 'stravakit/js/dist-slider.js' %}"></script>
+<script src="{% static 'stravakit/js/dashboard-map.js' %}"></script>
+<script src="{% static 'stravakit/js/dashboard.js' %}"></script>
+
+{% endblock %}

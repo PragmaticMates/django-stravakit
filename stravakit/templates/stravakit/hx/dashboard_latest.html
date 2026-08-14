@@ -1,0 +1,7 @@
+<div class="act-cards" id="latest-activities" hx-swap-oob="true">
+{% for activity in latest_activities %}
+  {% include "stravakit/widgets/activity.html" with activity=activity show_close=False %}
+{% empty %}
+  <p style="color: var(--ink-3);">No activities match the current filter.</p>
+{% endfor %}
+</div><!-- /.act-cards -->

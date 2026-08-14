@@ -5,9 +5,9 @@ from types import SimpleNamespace
 import pytest
 from django.test import RequestFactory
 
-from strava import helpers
-from strava.models import Activity, Gear
-from strava.views import DashboardView
+from stravakit import helpers
+from stravakit.models import Activity, Gear
+from stravakit.views import DashboardView
 
 
 def dt(year, month, day, hour=12):

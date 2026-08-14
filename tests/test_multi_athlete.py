@@ -13,10 +13,10 @@ import pytest
 from django.db import IntegrityError
 from django.test import RequestFactory
 
-from strava import api
-from strava.api import StravaApi
-from strava.models import Activity, Athlete, Gear
-from strava.views import ActivitiesView
+from stravakit import api
+from stravakit.api import StravaApi
+from stravakit.models import Activity, Athlete, Gear
+from stravakit.views import ActivitiesView
 
 
 def _activity(id, athlete):
@@ -131,7 +131,7 @@ class TestSeedMigration:
         # apps usage is get_model + .objects, which the live registry satisfies).
         import importlib
         from django.apps import apps as global_apps
-        mod = importlib.import_module("strava.migrations.0011_seed_default_athlete")
+        mod = importlib.import_module("stravakit.migrations.0011_seed_default_athlete")
         mod.seed_default_athlete(global_apps, None)
 
     def test_marks_default_and_backfills_unowned_rows(self):

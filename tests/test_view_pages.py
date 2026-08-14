@@ -11,8 +11,8 @@ import pytest
 from django.http import Http404
 from django.test import RequestFactory
 
-from strava.models import Activity, Gear
-from strava.views import (
+from stravakit.models import Activity, Gear
+from stravakit.views import (
     ActivitiesView, ActivityCardView, CompareView, DashboardView,
     GalleryView, GearView,
 )
@@ -376,11 +376,11 @@ class TestActivityCardView:
 # --------------------------------------------------------------------------- #
 class TestTemplateSelection:
     @pytest.mark.parametrize("view_cls,full,fragment", [
-        (DashboardView, "strava/pages/dashboard.html", "strava/hx/dashboard_results.html"),
-        (ActivitiesView, "strava/pages/activities.html", "strava/hx/activities_results.html"),
-        (GearView, "strava/pages/gear.html", "strava/hx/gear_results.html"),
-        (GalleryView, "strava/pages/gallery.html", "strava/hx/gallery_results.html"),
-        (CompareView, "strava/pages/compare.html", "strava/hx/compare_body.html"),
+        (DashboardView, "stravakit/pages/dashboard.html", "stravakit/hx/dashboard_results.html"),
+        (ActivitiesView, "stravakit/pages/activities.html", "stravakit/hx/activities_results.html"),
+        (GearView, "stravakit/pages/gear.html", "stravakit/hx/gear_results.html"),
+        (GalleryView, "stravakit/pages/gallery.html", "stravakit/hx/gallery_results.html"),
+        (CompareView, "stravakit/pages/compare.html", "stravakit/hx/compare_body.html"),
     ])
     def test_full_vs_fragment(self, view_cls, full, fragment):
         view = view_cls()
