@@ -1,4 +1,4 @@
-/* django-strava · activities page — route SVGs, view + sort controls */
+/* django-stravakit · activities page — route SVGs, view + sort controls */
 function renderRoutes(root) {
   (root || document).querySelectorAll('.fc-route[data-polyline]').forEach(function(svg) {
     window.DSCharts.renderRouteSvg(svg);

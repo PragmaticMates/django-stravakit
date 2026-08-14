@@ -1,4 +1,4 @@
-/* django-strava · site-wide UI — nav + user menu, photo lightbox, page-load timing */
+/* django-stravakit · site-wide UI — nav + user menu, photo lightbox, page-load timing */
 function toggleNav(e) {
   e.stopPropagation();
   const nav = document.getElementById('site-nav');

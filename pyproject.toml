@@ -37,9 +37,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/PragmaticMates/django-strava"
-Repository = "https://github.com/PragmaticMates/django-strava"
-Issues = "https://github.com/PragmaticMates/django-strava/issues"
+Homepage = "https://github.com/PragmaticMates/django-stravakit"
+Repository = "https://github.com/PragmaticMates/django-stravakit"
+Issues = "https://github.com/PragmaticMates/django-stravakit/issues"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-django"]

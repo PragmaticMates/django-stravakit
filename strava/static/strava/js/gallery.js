@@ -1,4 +1,4 @@
-/* django-strava · gallery page — view toggle, sport tabs, activity modal */
+/* django-stravakit · gallery page — view toggle, sport tabs, activity modal */
 // ——— View toggle (presentational, client-side) ———
 let currentView = 'grid';
 function applyView() {

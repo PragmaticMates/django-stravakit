@@ -1,4 +1,4 @@
-/* django-strava · shared pill filter dropdown (year / gear on the map + activities bars)
+/* django-stravakit · shared pill filter dropdown (year / gear on the map + activities bars)
  *
  * Builds a flat-or-sectioned dropdown from a json_script options island referenced by the
  * trigger's data-pill-options. Options are [value, label] or [value, label, group]; pass

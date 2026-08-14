@@ -1,4 +1,4 @@
-/* django-strava · shared sport filter dropdown (dashboard / activities / gallery)
+/* django-stravakit · shared sport filter dropdown (dashboard / activities / gallery)
  *
  * Builds one categorized icon dropdown from two json_script data islands rendered by
  * widgets/sport_filter.html: a flat "All sports" list of every sport in the data,

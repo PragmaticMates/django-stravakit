@@ -1,4 +1,4 @@
-/* django-strava · shared dual-handle distance range slider */
+/* django-stravakit · shared dual-handle distance range slider */
 // Two overlapping range inputs kept from crossing, with a painted fill between them and a
 // live km readout. Backs the distance filter on both the activities filter bar and the
 // dashboard map filter bar. `build` returns a controller (or null when the root is

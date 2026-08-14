@@ -1,4 +1,4 @@
-/* django-strava · dashboard activity map (Leaflet) */
+/* django-stravakit · dashboard activity map (Leaflet) */
 // Interactive activity map (Leaflet) — markers built from each activity's start_latlng.
 (function() {
   const el = document.getElementById('activity-map');

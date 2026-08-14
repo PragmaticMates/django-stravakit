@@ -1,4 +1,4 @@
-/* django-strava · chart renderers (vanilla SVG/canvas, accent-aware) */
+/* django-stravakit · chart renderers (vanilla SVG/canvas, accent-aware) */
 window.DSCharts = (function () {
   const NS = "http://www.w3.org/2000/svg";
   const el = (tag, attrs) => {

@@ -1,4 +1,4 @@
-/* django-strava · dashboard wiring (non-map): records/calendar/trends,
+/* django-stravakit · dashboard wiring (non-map): records/calendar/trends,
    lazy float-card route rendering, activity modal, row-height sync, gear donut. */
 
 /* ---- Records, calendar & trends charts (formerly classic-data.js) ---- */

@@ -1,4 +1,4 @@
-/* django-strava · gear page — gear detail sheet */
+/* django-stravakit · gear page — gear detail sheet */
 function wearColor(pct) {
   if (pct < 40) return '#22C065';
   if (pct < 75) return '#F5A623';
