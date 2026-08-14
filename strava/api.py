@@ -210,12 +210,27 @@ class StravaApi:
 
   @token_syncing
   @rate_limited
-  def get_activities(self, after=None):
+  def get_activities(self, after=None, before=None, limit=None):
+    """Activity summaries from the athlete's own feed, oldest first once ``after`` is set.
+
+    ``after``/``before`` bound the window and must be timezone-aware: stravalib converts an
+    aware value to a UTC epoch, but reads a *naive* one as UTC regardless of the project's
+    timezone. ``limit`` caps how many summaries are drained from the paginated iterator; it
+    is deliberately not exposed on the command line, because with ``after`` set it truncates
+    the *old* end of the window rather than the recent one.
+    """
     activities = []
 
-    for activity in self.client.get_activities(after=after):
+    for activity in self.client.get_activities(after=after, before=before, limit=limit):
       activities.append(json.loads(activity.model_dump_json()))
-    logger.info(self.get_formatted_json(activities))
+    # A count at info, the payloads at debug: a wide window is hundreds of summaries, and
+    # the pretty-printed dump of all of them buries every other line in the log.
+    window = "".join([
+      f" after {after:%Y-%m-%d}" if after else "",
+      f" before {before:%Y-%m-%d}" if before else "",
+    ])
+    logger.info(f"Fetched {len(activities)} activity summaries{window}")
+    logger.debug(self.get_formatted_json(activities))
     return activities
 
   @token_syncing

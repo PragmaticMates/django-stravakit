@@ -1,4 +1,5 @@
 import datetime
+import io
 import logging
 
 from django.contrib import admin, messages
@@ -63,7 +64,7 @@ class DistanceFilter(RangeNumericListFilter):
 class ActivityAdmin(admin.ModelAdmin):
     search_fields = ("id", "name__unaccent")
     actions = ["update_from_json", "fetch_from_api", "send_to_api"]
-    actions_list = ["import_strava", "open_strava_activities"]
+    actions_list = ["import_strava", "import_strava_missing", "open_strava_activities"]
     date_hierarchy = "start_date"
     list_display = ("show_start_date", "name_and_id", "show_sport_type", "show_distance", "show_elevation", "show_time",
                     "show_speed", "show_heartrate", "show_calories", "gear", "is_private")
@@ -88,10 +89,24 @@ class ActivityAdmin(admin.ModelAdmin):
             return formfield
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    @action(description=_("Import from Strava"), url_path="import-strava")
+    @action(description=_("Import new"), url_path="import-strava")
     def import_strava(self, request, *args):
+        # The incremental import: everything newer than the latest activity already stored.
+        return self.run_import(request)
+
+    @action(description=_("Import missing (last 90 days)"), url_path="import-strava-missing")
+    def import_strava_missing(self, request, *args):
+        # The incremental import above is blind to anything *behind* its cursor, so an
+        # activity uploaded late or backdated never arrives by pressing that button. This
+        # rescans the window and fetches only what has no local row yet — a couple of API
+        # requests in a week where nothing was missed.
+        return self.run_import(request, days=90, missing=True)
+
+    def run_import(self, request, **options):
+        """Run ``import_strava`` with ``options`` and report the outcome as an admin message."""
+        output = io.StringIO()
         try:
-            call_command('import_strava')
+            call_command('import_strava', stdout=output, **options)
         except Exception as error:
             # The Strava API can reject the import (inactive app, expired token, rate
             # limit, outage). Show the reason as an admin message instead of a 500.
@@ -102,8 +117,15 @@ class ActivityAdmin(admin.ModelAdmin):
                 level=messages.ERROR,
             )
         else:
-            self.message_user(request, _("Import from Strava completed."), level=messages.SUCCESS)
+            self.message_user(request, self.import_summary(output), level=messages.SUCCESS)
         return redirect(request.META.get("HTTP_REFERER", reverse_lazy("admin:strava_activity_changelist")))
+
+    def import_summary(self, output):
+        """The command's closing "Done: ..." tally, so the message says what actually happened
+        rather than only that something did."""
+        completed = _("Import from Strava completed.")
+        lines = [line for line in output.getvalue().splitlines() if line.strip()]
+        return f"{completed} {lines[-1]}" if lines else completed
 
     @action(description=_("Show activities on Strava"), url_path="open-strava-activities")
     def open_strava_activities(self, request, *args):

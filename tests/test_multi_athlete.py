@@ -1,8 +1,9 @@
 """Tests for the multi-athlete additions: athlete resolution, per-athlete queryset
 scoping, view scoping and OAuth token-refresh persistence.
 
-Like the other view tests these drive the code directly (RequestFactory + method calls);
-the test settings define no TEMPLATES/urlconf, so nothing is rendered or URL-resolved.
+Like the other view tests these drive the code directly (RequestFactory + method calls)
+rather than going through the HTTP stack, so no template is rendered here — the minimal
+TEMPLATES/urlconf in the test settings exist for the admin tests, not these.
 """
 from datetime import datetime, timezone as tz
 from types import SimpleNamespace

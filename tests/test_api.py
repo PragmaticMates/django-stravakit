@@ -4,6 +4,7 @@ These don't touch the DB or a real Strava connection — the ``stravalib.Client`
 is never constructed (only ``StravaApi.get_token_expiration`` is exercised, which
 doesn't build a client).
 """
+from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -204,9 +205,25 @@ class TestStravaApiClient:
 
     def test_get_activities_serialises_each(self):
         activities = [Model({"id": 1}), Model({"id": 2})]
-        client = SimpleNamespace(get_activities=lambda after=None: iter(activities))
+        client = SimpleNamespace(
+            get_activities=lambda after=None, before=None, limit=None: iter(activities))
         result = self._api(client).get_activities()
         assert result == [{"id": 1}, {"id": 2}]
+
+    def test_get_activities_forwards_window(self):
+        # The window is the whole point of a backfill run — guard against a refactor
+        # quietly dropping a bound and rescanning everything (or nothing).
+        calls = {}
+
+        def fake(after=None, before=None, limit=None):
+            calls.update({"after": after, "before": before, "limit": limit})
+            return iter([])
+
+        after = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        before = datetime(2026, 4, 1, tzinfo=timezone.utc)
+        self._api(SimpleNamespace(get_activities=fake)).get_activities(
+            after=after, before=before, limit=5)
+        assert calls == {"after": after, "before": before, "limit": 5}
 
     def test_update_activity_forwards_kwargs(self):
         calls = {}

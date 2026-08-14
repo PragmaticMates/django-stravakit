@@ -101,6 +101,38 @@ python manage.py import_strava
 
 The command fetches all activities newer than the latest one in the database. On first run, it imports all available activities.
 
+#### Backfilling activities the incremental import missed
+
+Because the cursor is "newer than the latest one stored", an activity that appears *behind*
+it — uploaded a day late, backdated by hand, or made public after the importer had already
+passed — is never picked up. Rescan a window to find those:
+
+```bash
+python manage.py import_strava --days 90 --missing            # last 90 days, gaps only
+python manage.py import_strava --days 90 --missing --dry-run  # report, change nothing
+python manage.py import_strava --after 2025-01-01 --before 2025-04-01
+```
+
+| Option | Meaning |
+| --- | --- |
+| `--days N` | Window of the last N days (counted back from `--before`, else now). |
+| `--after DATE` | Explicit window start, `YYYY-MM-DD`. Not usable with `--days`. |
+| `--before DATE` | Explicit window end. |
+| `--missing` | Import only activities with no local row; skip the rest without spending a detail API call on them. |
+| `--dry-run` | List what would be imported; fetch no details and write nothing. |
+
+`--missing` is what makes a routine rescan cheap: a 90-day window is one list request plus
+one detail request per genuinely missing activity, so a week where nothing was missed costs
+2–3 requests. Without it the same window re-fetches every activity in range, which for 90
+days sits right at Strava's 100-requests-per-15-minutes limit — use that only when you
+actually want to refresh stored rows (names, kudos, gear links).
+
+A windowed run deliberately leaves `Athlete.synced_at` alone: rescanning history is not the
+same as being up to date, and that field is what the dashboard shows as "Last updated".
+
+For a long historical backfill, walk it in chunks (`--days 90 --before <date>`) rather than
+opening one enormous window, so a single run can't exhaust the daily quota.
+
 ### Pages
 
 The app ships a set of htmx-powered pages (registered under the `strava` URL namespace).
