@@ -1,4 +1,4 @@
-# django-strava
+# django-stravakit
 
 Reusable Django app for Strava API integration. Provides models for Activities and Gear, a management command for importing data, and a rich admin interface powered by [django-unfold](https://github.com/unfoldadmin/django-unfold).
 
@@ -17,8 +17,10 @@ Python dependencies (installed automatically):
 ## Installation
 
 ```bash
-pip install django-strava
+pip install django-stravakit
 ```
+
+The distribution is `django-stravakit`; the app it installs is imported as `strava`.
 
 Add `strava`, `django.contrib.humanize` and `django_htmx` to `INSTALLED_APPS`, and the htmx middleware to `MIDDLEWARE`:
 
@@ -172,7 +174,7 @@ The app registers `Activity` and `Gear` models in the Django admin with:
 
 The nav name, avatar and follower/following counts are driven by the imported `Athlete` — nothing is hardcoded. The two branding elements in `strava/pages/base.html` are exposed as template blocks, so a consuming project can override them by extending the base template:
 
-- `{% block brand %}` — the name shown in the page `<title>` (defaults to `django-strava`)
+- `{% block brand %}` — the name shown in the page `<title>` (defaults to `django-stravakit`)
 - `{% block logo %}` — the header logo SVG
 
 ## License

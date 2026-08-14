@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-django-strava is a reusable Django app (`strava`) that integrates with the Strava API. It provides models for Activities and Gear, a management command for importing data, and a rich admin interface powered by django-unfold.
+django-stravakit (distribution name; the app is imported as `strava`) is a reusable Django app that integrates with the Strava API. It provides models for Activities and Gear, a management command for importing data, and a rich admin interface powered by django-unfold.
 
 ## Dependencies
 
