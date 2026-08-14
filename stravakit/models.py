@@ -42,7 +42,7 @@ class Activity(models.Model):
   gear = models.ForeignKey("Gear", on_delete=models.SET_NULL,
                            blank=True, null=True, default=None)
   # The activity's owner. Nullable because rows imported before athlete linking existed
-  # have none until the next import backfills them (see import_strava).
+  # have none until the next import backfills them (see stravakit_import).
   athlete = models.ForeignKey("Athlete", on_delete=models.CASCADE,
                               blank=True, null=True, default=None, related_name="activities")
   json = models.JSONField()
@@ -238,7 +238,7 @@ class Athlete(models.Model):
 
   The app is single-athlete, so the frontend reads the one athlete via
   ``Athlete.current()`` — the nav name, avatar and follower/following counts come
-  from here instead of being hardcoded. Populated by ``import_strava`` (and the
+  from here instead of being hardcoded. Populated by ``stravakit_import`` (and the
   dashboard refresh button) from the authenticated athlete on the Strava API.
   """
 
@@ -254,12 +254,12 @@ class Athlete(models.Model):
   friend_count = models.PositiveIntegerField(_("following"), null=True, blank=True)
   # Per-athlete OAuth credentials. Populated by the OAuth connect flow (see strava.views);
   # refreshed access/refresh tokens are written back here after each API call by StravaApi.
-  # Blank until the athlete is connected — `import_strava` skips athletes without tokens.
+  # Blank until the athlete is connected — `stravakit_import` skips athletes without tokens.
   access_token = models.CharField(_("access token"), max_length=100, blank=True, default="")
   refresh_token = models.CharField(_("refresh token"), max_length=100, blank=True, default="")
   token_expires_at = models.DateTimeField(_("token expires at"), null=True, blank=True)
   scope = models.CharField(_("scope"), max_length=200, blank=True, default="")
-  # When import_strava last refreshed this athlete's data — shown as the dashboard's
+  # When stravakit_import last refreshed this athlete's data — shown as the dashboard's
   # "Last updated". Null until the first successful import.
   synced_at = models.DateTimeField(_("last synced at"), null=True, blank=True)
   # The athlete rendered at the site root. Exactly one row is default (enforced below);

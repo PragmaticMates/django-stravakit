@@ -98,7 +98,7 @@ STRAVA_RATE_LIMIT_MAX_RETRIES = 3      # optional, retries after a 429 (default:
 Import activities from the Strava API:
 
 ```bash
-python manage.py import_strava
+python manage.py stravakit_import
 ```
 
 The command fetches all activities newer than the latest one in the database. On first run, it imports all available activities.
@@ -110,9 +110,9 @@ it — uploaded a day late, backdated by hand, or made public after the importer
 passed — is never picked up. Rescan a window to find those:
 
 ```bash
-python manage.py import_strava --days 90 --missing            # last 90 days, gaps only
-python manage.py import_strava --days 90 --missing --dry-run  # report, change nothing
-python manage.py import_strava --after 2025-01-01 --before 2025-04-01
+python manage.py stravakit_import --days 90 --missing            # last 90 days, gaps only
+python manage.py stravakit_import --days 90 --missing --dry-run  # report, change nothing
+python manage.py stravakit_import --after 2025-01-01 --before 2025-04-01
 ```
 
 | Option | Meaning |
@@ -166,7 +166,7 @@ The app registers `Activity` and `Gear` models in the Django admin with:
 
 **Gear** - Stores gear details (brand, model, description). Automatically fetched from the API when first referenced by an activity.
 
-**Athlete** - Stores the authenticated athlete's profile (name, avatar, city/country, follower and following counts). Populated by `import_strava` (and the dashboard refresh button) so the site chrome shows the real athlete instead of a hardcoded name. The frontend reads it via `Athlete.current()`; the app is single-athlete.
+**Athlete** - Stores the authenticated athlete's profile (name, avatar, city/country, follower and following counts). Populated by `stravakit_import` (and the dashboard refresh button) so the site chrome shows the real athlete instead of a hardcoded name. The frontend reads it via `Athlete.current()`; the app is single-athlete.
 
 `Activity` and `Gear` carry a nullable `athlete` foreign key (`on_delete=CASCADE`) identifying their owner. It's set during import; rows imported before athlete linking existed are backfilled to the athlete on the next import.
 

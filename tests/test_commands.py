@@ -8,7 +8,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.utils import timezone as django_timezone
 
-from stravakit.management.commands.import_strava import Command
+from stravakit.management.commands.stravakit_import import Command
 from stravakit.models import Activity, Athlete, Gear
 
 
@@ -55,7 +55,7 @@ def _connect_athlete(athlete_id=42):
 @pytest.mark.django_db
 class TestImportStrava:
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_creates_activities(self, mock_api_cls, mock_gear):
         _connect_athlete()
         mock_api_cls.return_value.get_athlete.return_value = ATHLETE_JSON
@@ -67,7 +67,7 @@ class TestImportStrava:
         details = {100: ACTIVITY_JSON_1, 200: ACTIVITY_JSON_2}
         mock_api_cls.return_value.get_activity.side_effect = lambda activity_id: details[activity_id]
 
-        call_command("import_strava")
+        call_command("stravakit_import")
 
         assert Activity.objects.count() == 2
         a1 = Activity.objects.get(id=100)
@@ -83,13 +83,13 @@ class TestImportStrava:
         assert a2.athlete_id == 42
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_imports_athlete(self, mock_api_cls, mock_gear):
         _connect_athlete()
         mock_api_cls.return_value.get_athlete.return_value = ATHLETE_JSON
         mock_api_cls.return_value.get_activities.return_value = []
 
-        call_command("import_strava")
+        call_command("stravakit_import")
 
         athlete = Athlete.objects.get(id=42)
         assert athlete.full_name == "Ada Lovelace"
@@ -101,10 +101,10 @@ class TestImportStrava:
         # button / admin action) rather than silently importing nothing.
         Athlete.objects.create(id=42, json={})  # exists but not connected (no tokens)
         with pytest.raises(CommandError):
-            call_command("import_strava")
+            call_command("stravakit_import")
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_incremental_passes_after(self, mock_api_cls, mock_gear):
         athlete = _connect_athlete()
         # An existing activity owned by this athlete so their .exists()/.latest() is found
@@ -122,14 +122,14 @@ class TestImportStrava:
         mock_api_cls.return_value.get_athlete.return_value = ATHLETE_JSON
         mock_api_cls.return_value.get_activities.return_value = []
 
-        call_command("import_strava")
+        call_command("stravakit_import")
 
         mock_api_cls.return_value.get_activities.assert_called_once_with(
             after=datetime(2024, 6, 15, 7, 30, tzinfo=timezone.utc), before=None
         )
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_updates_existing_activity(self, mock_api_cls, mock_gear):
         _connect_athlete()
         Activity.objects.create(
@@ -146,7 +146,7 @@ class TestImportStrava:
         mock_api_cls.return_value.get_activities.return_value = [updated_json]
         mock_api_cls.return_value.get_activity.side_effect = lambda activity_id: updated_json
 
-        call_command("import_strava")
+        call_command("stravakit_import")
 
         assert Activity.objects.count() == 1
         assert Activity.objects.get(id=100).name == "Renamed Run"
@@ -168,13 +168,13 @@ class TestImportWindow:
         )
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_days_overrides_the_cursor(self, mock_api_cls, mock_gear):
         athlete = _connect_athlete()
         self._stored_activity(athlete)
         api = self._api(mock_api_cls)
 
-        call_command("import_strava", "--days", "90")
+        call_command("stravakit_import", "--days", "90")
 
         kwargs = api.get_activities.call_args.kwargs
         assert kwargs["before"] is None
@@ -184,24 +184,24 @@ class TestImportWindow:
         assert (django_timezone.now() - kwargs["after"]).days == 90
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_days_counts_back_from_before(self, mock_api_cls, mock_gear):
         _connect_athlete()
         api = self._api(mock_api_cls)
 
-        call_command("import_strava", "--days", "30", "--before", "2025-01-01")
+        call_command("stravakit_import", "--days", "30", "--before", "2025-01-01")
 
         kwargs = api.get_activities.call_args.kwargs
         assert (kwargs["before"] - kwargs["after"]).days == 30
         assert kwargs["before"].date() == date(2025, 1, 1)
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_explicit_bounds_are_aware(self, mock_api_cls, mock_gear):
         _connect_athlete()
         api = self._api(mock_api_cls)
 
-        call_command("import_strava", "--after", "2025-01-01", "--before", "2025-02-01")
+        call_command("stravakit_import", "--after", "2025-01-01", "--before", "2025-02-01")
 
         kwargs = api.get_activities.call_args.kwargs
         # Naive input is read in the project timezone, never handed to stravalib naive.
@@ -209,24 +209,24 @@ class TestImportWindow:
         assert django_timezone.is_aware(kwargs["before"])
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_windowed_run_leaves_synced_at_alone(self, mock_api_cls, mock_gear):
         athlete = _connect_athlete()
         self._api(mock_api_cls)
 
-        call_command("import_strava", "--days", "90")
+        call_command("stravakit_import", "--days", "90")
 
         athlete.refresh_from_db()
         # A historical rescan is not "last updated" — the dashboard footer must stay honest.
         assert athlete.synced_at is None
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_default_run_sets_synced_at(self, mock_api_cls, mock_gear):
         athlete = _connect_athlete()
         self._api(mock_api_cls)
 
-        call_command("import_strava")
+        call_command("stravakit_import")
 
         athlete.refresh_from_db()
         assert athlete.synced_at is not None
@@ -240,7 +240,7 @@ class TestImportWindow:
     def test_invalid_window_raises(self, argv):
         _connect_athlete()
         with pytest.raises(CommandError):
-            call_command("import_strava", *argv)
+            call_command("stravakit_import", *argv)
 
 
 @pytest.mark.django_db
@@ -256,7 +256,7 @@ class TestImportMissing:
         return api
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_skips_ids_already_stored(self, mock_api_cls, mock_gear):
         athlete = _connect_athlete()
         Activity.objects.create(
@@ -265,13 +265,13 @@ class TestImportMissing:
         )
         api = self._api(mock_api_cls, [ACTIVITY_JSON_1, ACTIVITY_JSON_2])
 
-        call_command("import_strava", "--days", "90", "--missing")
+        call_command("stravakit_import", "--days", "90", "--missing")
 
         api.get_activity.assert_called_once_with(200)
         assert Activity.objects.count() == 2
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_rows_owned_by_nobody_count_as_known(self, mock_api_cls, mock_gear):
         # Legacy rows carry no athlete. Scoping the diff per athlete would call them
         # missing and re-fetch them on every single run — the cost --missing exists to avoid.
@@ -282,12 +282,12 @@ class TestImportMissing:
         )
         api = self._api(mock_api_cls, [ACTIVITY_JSON_1])
 
-        call_command("import_strava", "--days", "90", "--missing")
+        call_command("stravakit_import", "--days", "90", "--missing")
 
         api.get_activity.assert_not_called()
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_imports_activity_older_than_the_cursor(self, mock_api_cls, mock_gear):
         # The bug this option exists for: an activity backdated behind the newest stored
         # one is invisible to the incremental import forever.
@@ -298,13 +298,13 @@ class TestImportMissing:
         )
         api = self._api(mock_api_cls, [ACTIVITY_JSON_1, ACTIVITY_JSON_2])
 
-        call_command("import_strava", "--days", "90", "--missing")
+        call_command("stravakit_import", "--days", "90", "--missing")
 
         api.get_activity.assert_called_once_with(100)
         assert Activity.objects.filter(id=100).exists()
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_gear_is_resolved_only_for_missing(self, mock_api_cls, mock_gear):
         athlete = _connect_athlete()
         # gear_ensure is mocked, so the rows it would have created have to exist already
@@ -321,13 +321,13 @@ class TestImportMissing:
             {**ACTIVITY_JSON_2, "gear_id": "g2"},
         ])
 
-        call_command("import_strava", "--days", "90", "--missing")
+        call_command("stravakit_import", "--days", "90", "--missing")
 
         assert mock_gear.call_count == 1
         assert mock_gear.call_args.kwargs["gear_id"] == "g2"
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_nothing_missing_costs_no_detail_calls(self, mock_api_cls, mock_gear):
         athlete = _connect_athlete()
         Activity.objects.create(
@@ -336,18 +336,18 @@ class TestImportMissing:
         )
         api = self._api(mock_api_cls, [ACTIVITY_JSON_1])
 
-        call_command("import_strava", "--days", "90", "--missing")
+        call_command("stravakit_import", "--days", "90", "--missing")
 
         api.get_activity.assert_not_called()
 
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
-    @patch("stravakit.management.commands.import_strava.StravaApi")
+    @patch("stravakit.management.commands.stravakit_import.StravaApi")
     def test_dry_run_writes_nothing(self, mock_api_cls, mock_gear):
         athlete = _connect_athlete()
         api = self._api(mock_api_cls, [ACTIVITY_JSON_1])
         out = io.StringIO()
 
-        call_command("import_strava", "--days", "90", "--missing", "--dry-run", stdout=out)
+        call_command("stravakit_import", "--days", "90", "--missing", "--dry-run", stdout=out)
 
         assert Activity.objects.count() == 0
         api.get_activity.assert_not_called()
@@ -362,7 +362,7 @@ class TestImportFromFile:
     @patch("stravakit.services.sync.gear_ensure", return_value=None)
     def test_creates_activities_from_file(self, mock_gear):
         payload = json_lib.dumps([ACTIVITY_JSON_1, ACTIVITY_JSON_2])
-        with patch("stravakit.management.commands.import_strava.os.path.exists", return_value=True), \
+        with patch("stravakit.management.commands.stravakit_import.os.path.exists", return_value=True), \
              patch("builtins.open", mock_open(read_data=payload)):
             Command().import_activities_from_file()
 
@@ -370,6 +370,6 @@ class TestImportFromFile:
         assert Activity.objects.get(id=100).name == "Morning Run"
 
     def test_missing_file_creates_nothing(self):
-        with patch("stravakit.management.commands.import_strava.os.path.exists", return_value=False):
+        with patch("stravakit.management.commands.stravakit_import.os.path.exists", return_value=False):
             Command().import_activities_from_file()
         assert Activity.objects.count() == 0

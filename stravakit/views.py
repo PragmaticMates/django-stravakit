@@ -127,13 +127,13 @@ class DashboardView(AthleteScopedMixin, TemplateView):
 
         # ---- "By the Numbers" — fun stats + summary, over the filtered activities ----
         context['fun_stats'], context['summary'] = services.analytics.by_the_numbers(activities)
-        # The real time import_strava last refreshed this athlete (not "now").
+        # The real time stravakit_import last refreshed this athlete (not "now").
         context['last_updated'] = self.athlete.synced_at if self.athlete else None
         return context
 
 
 class RefreshView(UserPassesTestMixin, DashboardView):
-    """Footer refresh button (POST): run the ``import_strava`` management command to
+    """Footer refresh button (POST): run the ``stravakit_import`` management command to
     pull the latest activities from the Strava API, then re-render every dashboard
     section as out-of-band swaps (plus the footer timestamp) so the page updates in
     place. GET is not allowed — the button always posts.
@@ -155,7 +155,7 @@ class RefreshView(UserPassesTestMixin, DashboardView):
 
     def post(self, request, *args, **kwargs):
         try:
-            call_command('import_strava')
+            call_command('stravakit_import')
         except Exception as error:
             # The Strava API can reject the import (inactive app, expired token, rate
             # limit, outage). Surface the reason in the footer instead of a 500 that

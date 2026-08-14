@@ -1,7 +1,7 @@
 """Tests for the changelist-level admin actions on ActivityAdmin.
 
 These drive the action methods directly rather than through the admin HTTP stack — what
-matters is which options reach ``import_strava`` and what the operator is told afterwards,
+matters is which options reach ``stravakit_import`` and what the operator is told afterwards,
 not unfold's button rendering.
 """
 import io
@@ -29,33 +29,33 @@ def request_():
 
 
 class TestImportActions:
-    def test_import_strava_runs_the_incremental_import(self, activity_admin, request_):
+    def test_stravakit_import_runs_the_incremental_import(self, activity_admin, request_):
         with patch("stravakit.admin.call_command") as call_command, \
              patch.object(ActivityAdmin, "message_user"):
-            activity_admin.import_strava(request_)
+            activity_admin.stravakit_import(request_)
 
         # No window and no --missing: byte-for-byte the behaviour this button always had.
-        assert call_command.call_args.args == ("import_strava",)
+        assert call_command.call_args.args == ("stravakit_import",)
         assert set(call_command.call_args.kwargs) == {"stdout"}
 
     def test_import_missing_passes_the_window(self, activity_admin, request_):
         with patch("stravakit.admin.call_command") as call_command, \
              patch.object(ActivityAdmin, "message_user"):
-            activity_admin.import_strava_missing(request_)
+            activity_admin.stravakit_import_missing(request_)
 
         kwargs = call_command.call_args.kwargs
         assert (kwargs["days"], kwargs["missing"]) == (90, True)
 
     def test_both_actions_are_offered(self, activity_admin):
-        assert "import_strava" in activity_admin.actions_list
-        assert "import_strava_missing" in activity_admin.actions_list
+        assert "stravakit_import" in activity_admin.actions_list
+        assert "stravakit_import_missing" in activity_admin.actions_list
 
     def test_failure_is_reported_not_raised(self, activity_admin, request_):
         # A rejected import (expired token, rate limit, outage) must reach the operator as
         # a message rather than a 500.
         with patch("stravakit.admin.call_command", side_effect=Exception("boom")), \
              patch.object(ActivityAdmin, "message_user") as message_user:
-            activity_admin.import_strava_missing(request_)
+            activity_admin.stravakit_import_missing(request_)
 
         assert message_user.call_args.kwargs["level"] == messages.ERROR
 
@@ -66,7 +66,7 @@ class TestImportActions:
 
         with patch("stravakit.admin.call_command", side_effect=fake), \
              patch.object(ActivityAdmin, "message_user") as message_user:
-            activity_admin.import_strava_missing(request_)
+            activity_admin.stravakit_import_missing(request_)
 
         message = message_user.call_args.args[1]
         assert "0 imported" in message

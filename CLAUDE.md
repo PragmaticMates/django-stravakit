@@ -20,7 +20,7 @@ django-stravakit (distribution name; the app is imported as `strava`) is a reusa
 - **querysets.py** - `ActivityQuerySet` with PostgreSQL-specific JSON queries (e.g., `gear_unsynced()` uses `jsonb_extract_path_text`).
 - **admin.py** - Uses django-unfold decorators exclusively (not standard Django admin decorators). Rich display methods for pace, speed, heartrate, elevation, etc.
 - **choices.py** - `SportType` as `models.TextChoices` with 56 sport types.
-- **management/commands/import_strava.py** - `import_strava` command that fetches activities from API or file and creates/updates records. With no arguments it is incremental: everything newer than each athlete's latest stored activity. `--days/--after/--before` replace that cursor with an explicit window (a rescan, so it does not touch `Athlete.synced_at`), and `--missing` restricts the run to activities with no local row, which is the only cheap way to backfill gaps — see the README for the cost argument.
+- **management/commands/stravakit_import.py** - `stravakit_import` command that fetches activities from API or file and creates/updates records. With no arguments it is incremental: everything newer than each athlete's latest stored activity. `--days/--after/--before` replace that cursor with an explicit window (a rescan, so it does not touch `Athlete.synced_at`), and `--missing` restricts the run to activities with no local row, which is the only cheap way to backfill gaps — see the README for the cost argument.
 
 ## Frontend layout
 

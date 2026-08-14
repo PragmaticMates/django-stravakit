@@ -64,7 +64,7 @@ class DistanceFilter(RangeNumericListFilter):
 class ActivityAdmin(admin.ModelAdmin):
     search_fields = ("id", "name__unaccent")
     actions = ["update_from_json", "fetch_from_api", "send_to_api"]
-    actions_list = ["import_strava", "import_strava_missing", "open_strava_activities"]
+    actions_list = ["stravakit_import", "stravakit_import_missing", "open_strava_activities"]
     date_hierarchy = "start_date"
     list_display = ("show_start_date", "name_and_id", "show_sport_type", "show_distance", "show_elevation", "show_time",
                     "show_speed", "show_heartrate", "show_calories", "gear", "is_private")
@@ -89,13 +89,13 @@ class ActivityAdmin(admin.ModelAdmin):
             return formfield
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    @action(description=_("Import new"), url_path="import-strava")
-    def import_strava(self, request, *args):
+    @action(description=_("Import new"), url_path="stravakit-import")
+    def stravakit_import(self, request, *args):
         # The incremental import: everything newer than the latest activity already stored.
         return self.run_import(request)
 
-    @action(description=_("Import missing (last 90 days)"), url_path="import-strava-missing")
-    def import_strava_missing(self, request, *args):
+    @action(description=_("Import missing (last 90 days)"), url_path="stravakit-import-missing")
+    def stravakit_import_missing(self, request, *args):
         # The incremental import above is blind to anything *behind* its cursor, so an
         # activity uploaded late or backdated never arrives by pressing that button. This
         # rescans the window and fetches only what has no local row yet — a couple of API
@@ -103,10 +103,10 @@ class ActivityAdmin(admin.ModelAdmin):
         return self.run_import(request, days=90, missing=True)
 
     def run_import(self, request, **options):
-        """Run ``import_strava`` with ``options`` and report the outcome as an admin message."""
+        """Run ``stravakit_import`` with ``options`` and report the outcome as an admin message."""
         output = io.StringIO()
         try:
-            call_command('import_strava', stdout=output, **options)
+            call_command('stravakit_import', stdout=output, **options)
         except Exception as error:
             # The Strava API can reject the import (inactive app, expired token, rate
             # limit, outage). Show the reason as an admin message instead of a 500.
