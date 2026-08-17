@@ -109,7 +109,10 @@ body {
 .nav-toggle svg { width: 20px; height: 20px; }
 
 /* ============ Map hero ============ */
-.maphero { position: relative; height: 700px; background: #D7E9F4; overflow: hidden; }
+/* isolation: the overlay scale below (map chrome, 0–6) is local to the hero. Without it those
+   z-indexes land in the root stacking context, where .page (z-index: 3) is pulled up over the
+   map's bottom --map-grad-h — and any overlay low in the hero paints over the stat band. */
+.maphero { position: relative; height: 700px; background: #D7E9F4; overflow: hidden; isolation: isolate; }
 /* Sports dropdown */
 .sports-dd {
   display: none; position: absolute; z-index: 200;
@@ -270,8 +273,10 @@ body {
 body.map-expanded { overflow: hidden; }
 body.map-expanded .nav { position: sticky; top: 0; z-index: 1001; }
 .map-filters { position: absolute; right: 18px; top: 18px; z-index: 5; display: flex; gap: 10px; }
+/* Last item in the left control column, continuing its 44px pitch (198 → 242 → 286 → 330).
+   Not bottom-left: that is inside the band .page overlaps, so the stat band covers it. */
 .map-note {
-  position: absolute; left: 18px; bottom: 18px; z-index: 5; margin: 0;
+  position: absolute; left: 18px; top: 330px; z-index: 5; margin: 0;
   background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
   font: 500 12px var(--font-body); color: var(--ink-3); padding: 5px 11px;
   box-shadow: var(--shadow);
