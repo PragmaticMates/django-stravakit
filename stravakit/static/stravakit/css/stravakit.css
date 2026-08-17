@@ -273,10 +273,11 @@ body {
 body.map-expanded { overflow: hidden; }
 body.map-expanded .nav { position: sticky; top: 0; z-index: 1001; }
 .map-filters { position: absolute; right: 18px; top: 18px; z-index: 5; display: flex; gap: 10px; }
-/* Last item in the left control column, continuing its 44px pitch (198 → 242 → 286 → 330).
-   Not bottom-left: that is inside the band .page overlaps, so the stat band covers it. */
+/* Bottom-left, but lifted by the height of the band .page is pulled up over — at a plain
+   bottom: 18px the stat band sits on top of it. Offset off --map-grad-h so it tracks that
+   overlap; the 900px block below resets it, where .page no longer overlaps at all. */
 .map-note {
-  position: absolute; left: 18px; top: 330px; z-index: 5; margin: 0;
+  position: absolute; left: 18px; bottom: calc(18px + var(--map-grad-h)); z-index: 5; margin: 0;
   background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
   font: 500 12px var(--font-body); color: var(--ink-3); padding: 5px 11px;
   box-shadow: var(--shadow);
@@ -733,6 +734,8 @@ img.act-photo, img.aoty-photo { object-fit: cover; }
   /* Drop the overlap onto the map: stacked, the stat band is too tall to sit over
      the map's bottom edge cleanly, so let it flow below the map instead. */
   .page { margin-top: 0; }
+  /* …which leaves the note nothing to clear, so put it back on the map's bottom edge. */
+  .map-note { bottom: 18px; }
 
   .statband { grid-template-columns: 1fr 1fr; }
   .statband .cell { border-left: none; }
