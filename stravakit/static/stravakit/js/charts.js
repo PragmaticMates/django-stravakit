@@ -117,6 +117,9 @@ window.DSCharts = (function () {
         img.alt = "";
         img.loading = "lazy";    // don't fetch tiles for off-screen cards up front
         img.decoding = "async";
+        // Send the origin with the tile request: a site-restricted CARTO key is checked
+        // against the Referer, and Django's default Referrer-Policy (same-origin) sends none.
+        img.referrerPolicy = "strict-origin-when-cross-origin";
         // Fade each tile in once it arrives so the map doesn't pop into place.
         img.addEventListener("load", () => img.classList.add("loaded"));
         img.src = tileUrl(sub[((wx + ty) % 4 + 4) % 4], z, wx, ty);

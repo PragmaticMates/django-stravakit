@@ -55,6 +55,10 @@
   L.tileLayer(basemap ? basemap.content : 'https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd', maxZoom: 19,
+    // A CARTO key restricted to a site is checked against the Referer. Django's default
+    // Referrer-Policy is same-origin, which sends none cross-origin — so ask for the origin
+    // here rather than depend on the host project's header.
+    referrerPolicy: 'strict-origin-when-cross-origin',
   }).addTo(map);
 
   // Remember the overview before showing a route, and note any manual map move so

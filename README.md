@@ -87,7 +87,9 @@ STRAVA_CARTO_API_KEY = "..."  # optional, but tiles are watermarked without it
 ```
 
 The free tier allows 5 million tile requests a month for non-commercial use, and the
-CARTO/OpenStreetMap attribution the maps render must stay visible.
+CARTO/OpenStreetMap attribution the maps render must stay visible. Restricting the key to
+your site's domain is fine: the tile requests carry the page origin as their Referer
+(`strict-origin-when-cross-origin`, set per tile), whatever `Referrer-Policy` the project sends.
 
 ### Rate limiting
 

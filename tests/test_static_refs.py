@@ -37,3 +37,12 @@ def test_every_shipped_static_file_is_referenced():
     referenced = {reference for reference, _ in _static_references()}
     shipped = {str(path.relative_to(STATIC_ROOT)) for path in STATIC_ROOT.rglob("*") if path.is_file()}
     assert shipped - referenced == set()
+
+
+@pytest.mark.parametrize("script", ["charts.js", "dashboard-map.js"])
+def test_tile_requests_send_the_origin(script):
+    """A CARTO key restricted to a site is checked against the Referer, and Django's default
+    Referrer-Policy (same-origin) sends none cross-origin — every tile request must ask for
+    the origin itself, or a restricted key answers 403 on every tile."""
+    source = (STATIC_ROOT / "stravakit" / "js" / script).read_text()
+    assert "strict-origin-when-cross-origin" in source
