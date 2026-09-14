@@ -74,6 +74,21 @@ STRAVA_REFRESH_TOKEN = "..."
 STRAVA_TOKEN_EXPIRES = "..."  # optional, format: 2024-01-01T00:00:00Z
 ```
 
+### Map tiles
+
+The dashboard map and the activity-card maps draw on CARTO's Positron basemap, which
+[requires a free API key](https://carto.com/basemaps/apikey/) — without one every tile is
+watermarked "API KEY REQUIRED". Request a key (it is e-mailed straight away, no account
+needed) and add it to your settings:
+
+```python
+# settings.py
+STRAVA_CARTO_API_KEY = "..."  # optional, but tiles are watermarked without it
+```
+
+The free tier allows 5 million tile requests a month for non-commercial use, and the
+CARTO/OpenStreetMap attribution the maps render must stay visible.
+
 ### Rate limiting
 
 API calls respect [Strava's rate limits](https://developers.strava.com/docs/rate-limits/).

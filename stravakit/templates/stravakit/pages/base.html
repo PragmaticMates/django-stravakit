@@ -1,4 +1,4 @@
-{% load static django_htmx %}
+{% load static django_htmx stravakit_map %}
 {# `athlete`, `athlete_id` and `athletes` come from AthleteScopedMixin (see strava.views). #}
 <!DOCTYPE html>
 <html lang="en" data-density="comfortable">
@@ -11,6 +11,8 @@
 {# Warm up the map-tile CDN so activity-card maps load without a handshake delay. #}
 <link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossorigin>
 <link rel="preconnect" href="https://b.basemaps.cartocdn.com" crossorigin>
+{# One tile URL for every map on the page (Leaflet and the static card maps), key included. #}
+<meta name="stravakit-basemap" content="{% stravakit_basemap_url %}">
 {% block fonts %}<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">{% endblock %}
 <link rel="stylesheet" href="{% static 'stravakit/css/stravakit.css' %}">
 {% block extra_css %}{% endblock %}

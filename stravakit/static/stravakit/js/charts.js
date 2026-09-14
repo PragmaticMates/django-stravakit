@@ -71,6 +71,12 @@ window.DSCharts = (function () {
      own Web-Mercator projection so the trace aligns with the tiles. Used in
      activity cards that have no photo, in place of the blank grey panel. ---- */
   const TILE = 256;
+  // Same URL template as the Leaflet map, from base.html's <meta> (carries the CARTO key).
+  const basemapMeta = document.querySelector('meta[name="stravakit-basemap"]');
+  const BASEMAP_URL = basemapMeta ? basemapMeta.content
+    : "https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png";
+  const tileUrl = (s, z, x, y) => BASEMAP_URL
+    .replace("{s}", s).replace("{z}", z).replace("{x}", x).replace("{y}", y).replace("{r}", "@2x");
   const mercX = (lng, s) => (lng + 180) / 360 * s;
   const mercY = (lat, s) => {
     const sin = Math.sin(lat * Math.PI / 180);
@@ -113,7 +119,7 @@ window.DSCharts = (function () {
         img.decoding = "async";
         // Fade each tile in once it arrives so the map doesn't pop into place.
         img.addEventListener("load", () => img.classList.add("loaded"));
-        img.src = `https://${sub[((wx + ty) % 4 + 4) % 4]}.basemaps.cartocdn.com/light_all/${z}/${wx}/${ty}@2x.png`;
+        img.src = tileUrl(sub[((wx + ty) % 4 + 4) % 4], z, wx, ty);
         img.style.cssText = `position:absolute;width:${TILE}px;height:${TILE}px;left:${tx * TILE - originX}px;top:${ty * TILE - originY}px;`;
         if (img.complete) img.classList.add("loaded");  // already cached
         bg.appendChild(img);

@@ -50,7 +50,9 @@
   const FIT = { paddingTopLeft: [50, 80], paddingBottomRight: [50, 140] };
 
   const map = L.map(el, { zoomControl: false, scrollWheelZoom: false });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  // Tile URL (with the CARTO key) comes from base.html's <meta>, shared with charts.js.
+  const basemap = document.querySelector('meta[name="stravakit-basemap"]');
+  L.tileLayer(basemap ? basemap.content : 'https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd', maxZoom: 19,
   }).addTo(map);
