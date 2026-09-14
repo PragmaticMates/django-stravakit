@@ -229,8 +229,7 @@ body {
 }
 .zoom-end:hover { color: var(--ink); }
 .zoom-slider {
-  appearance: slider-vertical; -webkit-appearance: slider-vertical; /* legacy fallback */
-  writing-mode: vertical-lr; direction: rtl;                        /* standard: + at top */
+  writing-mode: vertical-lr; direction: rtl;  /* vertical range, + at top (Chrome 124+, FF 120+, Safari 17.4+) */
   width: 6px; height: 100px; margin: 0; cursor: pointer;
   background: transparent; accent-color: var(--accent);
 }
