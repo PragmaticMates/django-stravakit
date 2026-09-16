@@ -15,6 +15,29 @@ document.addEventListener('click', function(e) {
   nav.classList.remove('open');
   btn.setAttribute('aria-expanded', 'false');
 });
+// A filter follows the visitor from page to page. Every page keeps its filter in the
+// address bar (the dashboard rewrites it in place, the lists push it), so at the moment
+// a nav link is used the current URL *is* the filter state. Each link declares in
+// `data-carry` which parameters its page understands, and its href is rebuilt from the
+// current URL just before it is followed — on pointerdown and focus, which both precede
+// a click, a middle-click and an Enter. Parameters the target does not list are dropped,
+// so an activity search never becomes a gear search.
+function carryFilters(link) {
+  const keys = (link.getAttribute('data-carry') || '').split(/\s+/).filter(Boolean);
+  const current = new URLSearchParams(window.location.search);
+  const url = new URL(link.getAttribute('href'), window.location.href);
+  keys.forEach(function(key) {
+    const value = current.get(key);
+    if (value) url.searchParams.set(key, value); else url.searchParams.delete(key);
+  });
+  link.setAttribute('href', url.pathname + url.search);
+}
+['pointerdown', 'focusin'].forEach(function(type) {
+  document.addEventListener(type, function(e) {
+    const link = e.target.closest && e.target.closest('a[data-carry]');
+    if (link) carryFilters(link);
+  });
+});
 function toggleUserMenu(e) {
   e.stopPropagation();
   const trigger = document.getElementById('user-menu-trigger');

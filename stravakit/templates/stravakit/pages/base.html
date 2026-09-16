@@ -35,24 +35,29 @@
   <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" onclick="toggleNav(event)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
   </button>
+  {% comment %}
+  `data-carry` names the query parameters a page understands, so the filter set on one
+  page follows the visitor to the next (ui.js rebuilds the href from the current URL as
+  the link is used). Gear's search is over gear names, so it inherits the athlete only.
+  {% endcomment %}
   <nav class="nav-items" id="nav-items">
-    <a class="nav-item" href="{% url 'stravakit:dashboard' %}"{% if active_page == 'dashboard' %} aria-current="page"{% endif %}>
+    <a class="nav-item" href="{% url 'stravakit:dashboard' %}" data-carry="athlete q sport gear year dist_min dist_max"{% if active_page == 'dashboard' %} aria-current="page"{% endif %}>
       <svg viewBox="0 0 24 24"><polyline points="3 11 12 4 21 11"></polyline><polyline points="5 10 5 20 19 20 19 10"></polyline></svg>
       Dashboard
     </a>
-    <a class="nav-item" href="{% url 'stravakit:activities' %}"{% if active_page == 'activities' %} aria-current="page"{% endif %}>
+    <a class="nav-item" href="{% url 'stravakit:activities' %}" data-carry="athlete q sport gear year dist_min dist_max"{% if active_page == 'activities' %} aria-current="page"{% endif %}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"></polygon></svg>
       Activities
     </a>
-    <a class="nav-item" href="{% url 'stravakit:gear' %}"{% if active_page == 'gear' %} aria-current="page"{% endif %}>
+    <a class="nav-item" href="{% url 'stravakit:gear' %}" data-carry="athlete"{% if active_page == 'gear' %} aria-current="page"{% endif %}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18"></path><path d="M5 18V9c0-1 .5-2 2-2h4l4 3h2c1 0 2 .5 2 2v6"></path><path d="M9 7V6"></path><path d="M5 14h14"></path></svg>
       Gear
     </a>
-    <a class="nav-item" href="{% url 'stravakit:gallery' %}"{% if active_page == 'gallery' %} aria-current="page"{% endif %}>
+    <a class="nav-item" href="{% url 'stravakit:gallery' %}" data-carry="athlete q sport year"{% if active_page == 'gallery' %} aria-current="page"{% endif %}>
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10" r="1.6"></circle><polyline points="5 18 11 12 15 16 18 13 21 16"></polyline></svg>
       Gallery
     </a>
-    <a class="nav-item" href="{% url 'stravakit:compare' %}"{% if active_page == 'compare' %} aria-current="page"{% endif %}>
+    <a class="nav-item" href="{% url 'stravakit:compare' %}" data-carry="athlete sport"{% if active_page == 'compare' %} aria-current="page"{% endif %}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="8 7 3 12 8 17"></polyline><polyline points="16 7 21 12 16 17"></polyline></svg>
       Compare
     </a>
