@@ -426,8 +426,10 @@
   // into the hidden #dash-filters form so the dependent dashboard sections (season
   // totals, latest activities, trends, calendar, gear stats) recompute server-side.
   const filterState = { q: '', sport: 'all', gear: 'all', year: 'all', dist_min: 0, dist_max: Infinity };
+  const distCeils = window.DSDistSlider.ceils('map-dist-ceils');
 
   function syncDashboard() {
+    syncUrl();
     const form = document.getElementById('dash-filters');
     if (!form || typeof htmx === 'undefined') return;
     document.getElementById('df-q').value = filterState.q;
@@ -439,6 +441,30 @@
     htmx.trigger(form, 'refresh');
   }
 
+  // Mirror the filter into the address bar (replace, not push — a keystroke is not a
+  // page) so the URL in the bar is always a link to this view: `?q=zelene&year=2025`
+  // opens with the box filled in and the markers and sections already filtered.
+  // Defaults are dropped rather than written, so an unfiltered dashboard keeps its
+  // bare URL. `athlete` stays whatever the page was opened with.
+  const FILTER_DEFAULTS = { q: '', sport: 'all', gear: 'all', year: 'all' };
+  function distBounds() {
+    return [0, filterState.sport in distCeils ? distCeils[filterState.sport] : distCeils.all];
+  }
+  function syncUrl() {
+    if (!window.history || !window.history.replaceState) return;
+    const url = new URL(window.location.href);
+    Object.keys(FILTER_DEFAULTS).forEach(function(key) {
+      if (filterState[key] === FILTER_DEFAULTS[key]) url.searchParams.delete(key);
+      else url.searchParams.set(key, filterState[key]);
+    });
+    const bounds = distBounds();
+    if (filterState.dist_min > bounds[0]) url.searchParams.set('dist_min', filterState.dist_min);
+    else url.searchParams.delete('dist_min');
+    if (filterState.dist_max < bounds[1]) url.searchParams.set('dist_max', filterState.dist_max);
+    else url.searchParams.delete('dist_max');
+    if (url.href !== window.location.href) window.history.replaceState(window.history.state, '', url);
+  }
+
   // Lowercase and strip diacritics, the client-side equivalent of unaccent().
   function unaccent(s) {
     return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -447,7 +473,9 @@
   // Show only markers matching every active filter, then reframe to the matches.
   // Search mirrors the server-side `name__unaccent__icontains` — accent-insensitive,
   // with each whitespace-separated token required to match (AND).
-  function applyFilters() {
+  // `sync === false` filters the markers only: for filters preset in the URL the server
+  // has already rendered every section, so the htmx round trip would be a no-op.
+  function applyFilters(sync) {
     if (!clusters) return;
     const tokens = unaccent(filterState.q.trim()).split(/\s+/).filter(Boolean);
     closeCard();
@@ -471,11 +499,14 @@
     visibleCoords = shown;  // reset re-frames the active filter, not every marker
     renderAllRoutes();      // keep the all-routes overlay in sync with the filter
     frameVisible();         // frame the matches (full routes when the overlay is on)
-    syncDashboard();        // recompute the dependent sections for the new filter
+    if (sync !== false) syncDashboard();  // recompute the dependent sections for the new filter
   }
 
+  // The search box is server-filled from `?q=` (a shared link), so its value is the
+  // starting state, not always the empty string.
   const searchInput = document.querySelector('.map-search-input');
   if (searchInput) {
+    filterState.q = searchInput.value;
     let searchTimer;
     searchInput.addEventListener('input', function() {
       clearTimeout(searchTimer);
@@ -485,7 +516,6 @@
 
   // Distance range slider (shared DSDistSlider module). Filtering runs client-side on
   // release; the sport dropdown rescales the track to the selected sport's ceiling.
-  const distCeils = window.DSDistSlider.ceils('map-dist-ceils');
   const distSlider = window.DSDistSlider.build(document.getElementById('map-dist-slider'), {
     onChange: function(lo, hi) { filterState.dist_min = lo; filterState.dist_max = hi; applyFilters(); }
   });
@@ -522,4 +552,12 @@
     filterState.year = yearBtn.getAttribute('data-pill-current') || 'all';
     DSPill.build(yearBtn, { onSelect: function(value) { filterState.year = value; applyFilters(); } });
   }
+
+  // A link with filters in it opens already filtered: the sections came from the server
+  // that way, and the controls above read their preset from the markup, so only the
+  // markers are still showing everything. Bring them in line without a round trip.
+  const bounds = distBounds();
+  const preset = Object.keys(FILTER_DEFAULTS).some(function(key) { return filterState[key] !== FILTER_DEFAULTS[key]; })
+    || filterState.dist_min > bounds[0] || filterState.dist_max < bounds[1];
+  if (preset) applyFilters(false);
 })();
