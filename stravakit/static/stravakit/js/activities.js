@@ -7,6 +7,19 @@ function renderRoutes(root) {
 renderRoutes(document);
 document.body.addEventListener('htmx:afterSwap', function(e) { renderRoutes(e.target); });
 
+// ——— Export link follows the filter ———
+// The filter form pushes its query string into the URL (hx-push-url), so after every swap
+// — and after the browser walks back through history — location.search is the current
+// filter. The export link is rebuilt from it rather than from the form, so it also carries
+// the sort and the athlete the same way the page does.
+(function() {
+  var link = document.getElementById('acts-export');
+  if (!link) return;
+  function sync() { link.href = link.dataset.base + location.search; }
+  document.body.addEventListener('htmx:afterSettle', sync);
+  document.body.addEventListener('htmx:historyRestore', sync);
+})();
+
 // ——— Distance range slider (dual handle) ———
 // The slider itself lives in the shared DSDistSlider module. Here it has no onChange
 // callback: the range inputs sit inside #acts-filters, whose hx-trigger includes the

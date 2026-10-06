@@ -891,6 +891,18 @@ img.act-photo, img.aoty-photo { object-fit: cover; }
 }
 .acts-upload-btn:hover { opacity: 0.88; }
 .acts-upload-btn svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+.acts-hero-actions { display: flex; align-items: center; gap: 10px; flex: none; flex-wrap: wrap; }
+/* Secondary sibling of the upload button: same shape, surface-coloured so the orange one
+   stays the primary action. */
+.acts-export-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--line-2); border-radius: 10px;
+  font: 600 14px var(--font-body); color: var(--ink); padding: 9px 18px;
+  white-space: nowrap; transition: border-color 0.15s, color 0.15s; flex: none;
+  text-decoration: none;
+}
+.acts-export-btn:hover { border-color: var(--accent); color: var(--accent); }
+.acts-export-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Summary bar */
 .acts-summary {

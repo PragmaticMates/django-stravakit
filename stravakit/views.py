@@ -7,14 +7,14 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.management import call_command
 from django.db import IntegrityError, transaction
 from django.db.models import Count, F, Max, Q, Sum
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, ListView, TemplateView
 
-from stravakit import helpers, services
+from stravakit import export, helpers, services
 from stravakit.api import StravaApi, _from_epoch, format_strava_error
 from stravakit.models import Activity, Athlete, Gear
 from stravakit.sports import TOP_SPORT_TYPES, group_data, sport_matches, sport_options
@@ -215,7 +215,24 @@ class ActivitiesView(AthleteScopedMixin, ListView):
         context.update(helpers.gear_year_options(public_qs, gear_qs))
         context.update(helpers.distance_slider_context(public_qs, context['sport'], params))
         context['summary'] = services.activities.summary(self.object_list, timezone.now().date())
+        # The export button carries the page's own query string, so the workbook holds
+        # exactly the rows the filters show, in the order the sort put them.
+        context['export_url'] = f"{reverse('stravakit:activities_export')}?{params.urlencode()}"
         return context
+
+
+class ActivitiesExportView(ActivitiesView):
+    """``activities/export/`` — the filtered activities list as an .xlsx download.
+
+    A subclass so it reads the very same filter, sort and athlete parameters as the page;
+    only the response differs. Public activities only, like the page: a private activity
+    is hidden from every public surface, and a spreadsheet is one."""
+
+    def get(self, request, *args, **kwargs):
+        content = export.activities_workbook(self.get_queryset(), self.athlete)
+        response = HttpResponse(content, content_type=export.XLSX_CONTENT_TYPE)
+        response['Content-Disposition'] = f'attachment; filename="{export.export_filename(self.athlete)}"'
+        return response
 
 
 class GearView(AthleteScopedMixin, ListView):

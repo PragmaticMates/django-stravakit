@@ -16,7 +16,8 @@ django-stravakit (distribution name; the app is imported as `strava`) is a reusa
 
 - **models.py** - `Activity` and `Gear` models. Both store raw API JSON in a `JSONField` alongside extracted fields. Sync status is tracked by comparing model fields against stored JSON.
 - **api.py** - `StravaApi` wrapper around `stravalib.Client`. Auth credentials are read from Django settings via `getattr(settings, ...)`: `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_ACCESS_TOKEN`, `STRAVA_REFRESH_TOKEN`, `STRAVA_TOKEN_EXPIRES` (plus optional `STRAVA_RATE_LIMIT_PRIORITY`, `STRAVA_RATE_LIMIT_MAX_RETRIES`). The consuming project decides how to populate those settings (e.g. from env).
-- **views.py** - Class-based views for the htmx-powered frontend pages (dashboard, activities, gear, gallery). Each view's `get_template_names()` returns an `hx/` fragment for htmx requests and the full page otherwise; all filtering/sorting/stat recalculation happens server-side.
+- **views.py** - Class-based views for the htmx-powered frontend pages (dashboard, activities, gear, gallery). Each view's `get_template_names()` returns an `hx/` fragment for htmx requests and the full page otherwise; all filtering/sorting/stat recalculation happens server-side. `ActivitiesExportView` subclasses `ActivitiesView` so the Excel download reads the same filter/sort/athlete params as the page.
+- **export.py** - The activities list as an `.xlsx` workbook (openpyxl). The column tuple's letters are referenced by the summary formulas, so adding or moving a column means updating both.
 - **querysets.py** - `ActivityQuerySet` with PostgreSQL-specific JSON queries (e.g., `gear_unsynced()` uses `jsonb_extract_path_text`).
 - **admin.py** - Uses django-unfold decorators exclusively (not standard Django admin decorators). Rich display methods for pace, speed, heartrate, elevation, etc.
 - **choices.py** - `SportType` as `models.TextChoices` with 56 sport types.

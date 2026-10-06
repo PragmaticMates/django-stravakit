@@ -13,10 +13,21 @@
       <h1>Activities</h1>
       <p class="acts-hero-sub" id="hero-sub">{{ summary.count }} activities</p>
     </div>
-    <a href="https://www.strava.com/upload/device" target="_blank" rel="noopener" class="acts-upload-btn">
-      <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path></svg>
-      Upload Activity
-    </a>
+    <div class="acts-hero-actions">
+      {% comment %}
+      Downloads the list as it is filtered and sorted right now. The href is rendered with
+      the page's query string and kept in step by activities.js whenever htmx pushes a new
+      one, so the file always matches what is on screen.
+      {% endcomment %}
+      <a href="{{ export_url }}" class="acts-export-btn" id="acts-export" data-base="{% url 'stravakit:activities_export' %}" title="Download the filtered list as Excel">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Export
+      </a>
+      <a href="https://www.strava.com/upload/device" target="_blank" rel="noopener" class="acts-upload-btn">
+        <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path></svg>
+        Upload Activity
+      </a>
+    </div>
   </div>
 
   <!-- Filter bar -->

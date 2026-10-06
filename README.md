@@ -164,7 +164,10 @@ without a full page reload.
   sport/gear/year filters) recompute every section live.
 - **Activities** (`stravakit:activities`) — searchable, sortable list of activities with
   filtering by sport, gear and month, a summary band (distance, elevation, time, this
-  week) and grid/table views.
+  week) and grid/table views. The **Export** button (`stravakit:activities_export`)
+  downloads the list as it is filtered and sorted as an `.xlsx` workbook — one sheet of
+  activities and a summary by year and by sport written as formulas over it, so it keeps
+  adding up after rows are edited in Excel. Public activities only, like the page.
 - **Gear** (`stravakit:gear`) — gear cards showing usage, wear level and replacement alerts.
 - **Gallery** (`stravakit:gallery`) — photo gallery of activities that have images.
 

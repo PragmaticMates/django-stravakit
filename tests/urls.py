@@ -5,8 +5,9 @@ The admin actions finish with ``redirect(...)``, and Django's ``resolve_url`` tr
 needs a urlconf to exist at all, even when the value is already a plain URL.
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("strava/", include("stravakit.urls")),
 ]
